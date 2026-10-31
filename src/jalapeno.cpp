@@ -1,13 +1,13 @@
-#include "chili_pepper.hpp"
+#include "jalapeno.hpp"
 #include "game_controller.hpp"
 #include "zombie.hpp"
 
 namespace pvz {
 
-ChiliPepper::ChiliPepper(GridPosition pos)
+Jalapeno::Jalapeno(GridPosition pos)
     : Plant(pos, HEALTH, COST) {}
 
-void ChiliPepper::update(double delta_seconds) {
+void Jalapeno::update(double delta_seconds) {
     if (!is_alive() || fuse_finished) {
         return;
     }
@@ -18,7 +18,7 @@ void ChiliPepper::update(double delta_seconds) {
     }
 }
 
-void ChiliPepper::act(godot::GameController& controller) {
+void Jalapeno::act(godot::GameController& controller) {
     // Chưa hết ngòi hoặc đã nổ rồi -> không làm gì.
     if (!fuse_finished || exploded) {
         return;
@@ -28,23 +28,13 @@ void ChiliPepper::act(godot::GameController& controller) {
     const GridPosition center = get_position();
 
     // Chỉ báo cho UI (âm thanh + hiệu ứng lửa); damage bên dưới không đổi.
-    controller.notify_chili_exploded(center);
+    controller.notify_jalapeno_exploded(center);
 
     // Quét toàn bộ Zombie cùng hàng.
     for (Zombie* z : controller.get_zombies_in_row(center.row)) {
-        // Giai đoạn 2: Instant Damage.
+        // Giai đoạn 2: Instant Damage. EXPLOSION_DAMAGE lớn hơn tổng máu + giáp
+        // của mọi Zombie hiện có nên chúng chết ngay, không cần DoT.
         z->take_damage(EXPLOSION_DAMAGE);
-
-        // Giai đoạn 3: gắn BURNING lên Zombie còn sống.
-        // apply_status() tự ghi đè nếu Zombie đã cháy -> không stack DoT.
-        if (z->is_alive()) {
-            StatusEffect burn;
-            burn.type = StatusEffectType::BURNING;
-            burn.remaining_duration = BURN_DURATION;
-            burn.damage_per_tick = BURN_TICK_DAMAGE;
-            burn.tick_interval = BURN_TICK_INTERVAL;
-            z->apply_status(burn);
-        }
     }
 
     // Tự huỷ; GameController::cleanup_dead_entities() sẽ gỡ khỏi Grid và entities.

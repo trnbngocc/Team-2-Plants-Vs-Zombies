@@ -3,6 +3,8 @@
 #include "entity.hpp"
 #include "grid.hpp"
 
+namespace godot { class GameController; } // forward declare, tránh include vòng lặp
+
 namespace pvz {
 
 class Zombie : public Entity {
@@ -32,6 +34,13 @@ public:
         DEAD
     };
 
+    // Loại Zombie dùng cho UI chọn hình / animation và cho luật riêng (boss, mower).
+    enum class Kind {
+        ORDINARY,   // Regular / Conehead / Buckethead (phân biệt bằng ArmorType)
+        GARGANTUAR, // boss
+        IMP         // do Gargantuar ném ra
+    };
+
     Zombie(
         GridPosition initial_position,
         int initial_health,
@@ -43,6 +52,18 @@ public:
 
     EntityType get_type() const override;
     void update(double delta_seconds) override;
+
+    virtual Kind get_kind() const { return Kind::ORDINARY; }
+
+    // GameController gọi mỗi frame sau update(), giống Plant::act().
+    // Mặc định không làm gì; Gargantuar override để ném Imp.
+    virtual void act(godot::GameController& controller) {}
+
+    // 0 = bình thường (đi / ăn). Giá trị khác do lớp con định nghĩa (UI chọn animation).
+    virtual int get_action_state() const { return 0; }
+
+    // Đẩy Zombie lùi về bên phải (tăng column) - Lawn Mower dùng cho boss.
+    void knock_back(float columns);
 
     int get_damage() const;
     float get_speed() const;
@@ -57,6 +78,7 @@ public:
 
     ArmorType get_armor_type() const;
     int get_armor_health() const;
+    int get_max_armor_health() const;   // giáp lúc tạo (UI chọn hình nón / xô nứt theo tỉ lệ)
     bool has_armor() const;
 
     // HP thân tối đa (giá trị lúc tạo). UI dùng để vẽ thanh máu; không đổi gameplay.
@@ -87,18 +109,26 @@ protected:
     // Logic di chuyển / tấn công dùng chung cho Zombie.
     void default_update(double delta_seconds);
 
+    // Đặt vị trí cột liên tục (và ô nguyên tương ứng). Dùng khi spawn tại vị trí lẻ.
+    void set_column_position(float column);
+
     int damage;
     float speed;
 
     Grid* grid = nullptr;
 
+    // Giây giữa hai lần cắn / đập. Lớp con (boss) có thể đổi.
+    double attack_interval = 1.0;
+
+    // True khi frame update gần nhất Zombie đang ăn Plant.
+    bool eating = false;
+
 private:
     double attack_cooldown = 0.0;
 
-    static constexpr double ATTACK_INTERVAL = 1.0;
-
     ArmorType armor_type;
     int armor_health;
+    int max_armor_health;
 
     float column_position = 0.0f;
 
@@ -109,7 +139,6 @@ private:
     int max_health;
 
     int id;
-    bool eating = false;
 };
 
 } // namespace pvz

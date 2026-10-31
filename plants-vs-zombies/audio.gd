@@ -16,11 +16,15 @@ const SFX := {
 	"click": "res://assets/audio/button_click.mp3",
 	"pea_hit": "res://assets/audio/peashooter.mp3",   # Peashooter projectile hits a zombie
 	"sun": "res://assets/audio/sun_collect.mp3",
-	"chili": "res://assets/audio/chilli_explosion.mp3",
+	"jalapeno": "res://assets/audio/jalapeno_explosion.mp3",
 	"incoming": "res://assets/audio/The zombies are coming Plants vs Zombies Sound Effect.mp3",
 	"win": "res://assets/audio/win.mp3",
 	"lose": "res://assets/audio/lose.mp3",
 	"eating": "res://assets/audio/zombie_eating.mp3",
+	"squash": "res://assets/audio/squash.mp3",              # Squash notices a zombie (preparation cue)
+	"mower": "res://assets/audio/lawn_mower.mp3",           # Lawn Mower running
+	"gargantuar_death": "res://assets/audio/gargantuar_death.mp3",
+	"start": "res://assets/audio/plants-vs-zombies-ready-set-plant.mp3",   # Start Text "Ready, Set, Plant!"
 }
 # Sound for a successful plant placement (supplied as planting.mp3; 0.8 s, audible
 # from 0.00 s). The first of these files that exists is used.
@@ -31,10 +35,12 @@ const PLANTING_CANDIDATES := [
 ]
 # Measured start of the audible part of each clip, in seconds.
 const START := {
-	"click": 0.72, "pea_hit": 0.89, "sun": 0.03, "chili": 0.13, "incoming": 1.10,
-	"win": 0.13, "lose": 0.37, "eating": 1.20, "planting": 0.0,
+	"click": 0.72, "pea_hit": 0.89, "sun": 0.03, "jalapeno": 0.13, "incoming": 1.10,
+	"win": 0.13, "lose": 0.37, "eating": 1.20, "planting": 0.0, "squash": 0.12, "mower": 0.6,
 }
 const SFX_VOICES := 8
+# Per-source volume (dB) of the "tracked" effects: one voice per source (a mower, a Squash), see play_tracked().
+const TRACKED_DB := {"squash": -2.0, "mower": -6.0}
 
 var _music: AudioStreamPlayer
 var _music_name := ""
@@ -43,6 +49,7 @@ var _voices: Array[AudioStreamPlayer] = []
 var _voice_sfx := {}   # voice -> name of the clip it is playing
 var _streams := {}
 var _paused := false
+var _tracked := {}      # key -> AudioStreamPlayer of an effect that follows one object (mower row, Squash cell)
 
 
 func _ready() -> void:
@@ -70,13 +77,21 @@ func _notification(what: int) -> void:
 ## own thread, so stop everything and give it a moment before quitting
 ## (quitting mid-playback leaks the playback objects at shutdown).
 ## The click that triggered the quit is allowed to finish first.
+var suppress_quit := false      # tests: do everything quit_game() does except ending the process
+var quit_requests := 0
+
+
 func quit_game() -> void:
+	quit_requests += 1
 	stop_music()
 	_eating.stop()
+	stop_all_tracked()
 	await get_tree().create_timer(0.15).timeout
 	for p in _voices:
 		p.stop()
 	await get_tree().create_timer(0.1).timeout
+	if suppress_quit:
+		return
 	get_tree().quit()
 
 
@@ -157,6 +172,63 @@ func play_sfx(name: String) -> void:
 	voice.play(START.get(name, 0.0))
 
 
+## An effect that belongs to ONE object (a running mower, a Squash that noticed a zombie). Starting it again for the
+## same key restarts that key's voice instead of stacking a second one, and the voice is released when the clip ends
+## or stop_tracked() is called.
+func play_tracked(key: String, name: String) -> void:
+	var s := _stream(_sfx_path(name), false)
+	if s == null:
+		return
+	stop_tracked(key, 0.0)
+	var p := AudioStreamPlayer.new()
+	p.stream = s
+	p.volume_db = TRACKED_DB.get(name, 0.0)
+	p.stream_paused = _paused
+	add_child(p)
+	_tracked[key] = p
+	p.finished.connect(_release_tracked.bind(key, p))
+	p.play(START.get(name, 0.0))
+
+
+func is_tracked_playing(key: String) -> bool:
+	return _tracked.has(key) and is_instance_valid(_tracked[key]) and (_tracked[key] as AudioStreamPlayer).playing
+
+
+func tracked_count() -> int:
+	return _tracked.size()
+
+
+## Stop a tracked effect, fading it out over `fade` seconds (0 = immediately).
+func stop_tracked(key: String, fade := 0.12) -> void:
+	if not _tracked.has(key):
+		return
+	var p: AudioStreamPlayer = _tracked[key]
+	_tracked.erase(key)
+	if not is_instance_valid(p):
+		return
+	if fade <= 0.0 or not p.playing:
+		p.stop()
+		p.queue_free()
+		return
+	var tw := create_tween()
+	tw.tween_property(p, "volume_db", -40.0, fade)
+	tw.tween_callback(func():
+		p.stop()
+		p.queue_free())
+
+
+func stop_all_tracked() -> void:
+	for k in _tracked.keys():
+		stop_tracked(k, 0.0)
+
+
+func _release_tracked(key: String, p: AudioStreamPlayer) -> void:
+	if _tracked.get(key) == p:
+		_tracked.erase(key)
+	if is_instance_valid(p):
+		p.queue_free()
+
+
 ## Continuous eating loop while at least one zombie is eating; not restarted per frame.
 func set_eating(active: bool) -> void:
 	if active and not _eating.playing:
@@ -175,6 +247,9 @@ func set_gameplay_paused(paused: bool) -> void:
 	_paused = paused
 	_music.stream_paused = paused
 	_eating.stream_paused = paused
+	for k in _tracked:
+		if is_instance_valid(_tracked[k]):
+			(_tracked[k] as AudioStreamPlayer).stream_paused = paused
 	for p in _voices:
 		if _voice_sfx.get(p, "") != "click":
 			p.stream_paused = paused
@@ -186,6 +261,7 @@ func stop_gameplay_audio() -> void:
 	_paused = false
 	stop_music()
 	_eating.stop()
+	stop_all_tracked()
 	for p in _voices:
 		p.stream_paused = false
 		if _voice_sfx.get(p, "") != "click":

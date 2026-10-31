@@ -1,6 +1,8 @@
 #include "wave_manager.hpp"
 #include "game_controller.hpp"
+#include "gargantuar.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <random>
 
@@ -27,6 +29,7 @@ namespace {
     // without this tolerance every timer would fire one frame late.
     constexpr double TIME_EPSILON = 1e-6;
 }
+
 void WaveManager::spawn_zombie(
     pvz::Zombie::ArmorType armor_type,
     int row,
@@ -97,6 +100,81 @@ void WaveManager::spawn_buckethead(int row, float column) {
 }
 
 
+void WaveManager::spawn_gargantuar(int row, float column) {
+    if (game_controller == nullptr) {
+        return;
+    }
+
+    auto boss = std::make_unique<pvz::Gargantuar>(
+        pvz::GridPosition{
+            row,
+            static_cast<int>(column)
+        }
+    );
+
+    game_controller->add_zombie(std::move(boss));
+}
+
+
+void WaveManager::spawn_kind(SpawnKind kind, int row, float column) {
+    switch (kind) {
+        case SpawnKind::REGULAR:
+            spawn_regular(row, column);
+            break;
+        case SpawnKind::CONEHEAD:
+            spawn_conehead(row, column);
+            break;
+        case SpawnKind::BUCKETHEAD:
+            spawn_buckethead(row, column);
+            break;
+        case SpawnKind::GARGANTUAR:
+            spawn_gargantuar(row, column);
+            break;
+    }
+}
+
+
+std::vector<WaveManager::SpawnKind> WaveManager::build_queue(int wave_number) {
+    std::vector<SpawnKind> queue;
+
+    if (wave_number <= 0 || wave_number > TOTAL_WAVES) {
+        return queue;
+    }
+
+    const WaveConfig& config = WAVES[wave_number - 1];
+
+    if (wave_number < TOTAL_WAVES) {
+        // Waves 1..3: loại ngẫu nhiên, giới hạn bởi max_armor của wave.
+        for (int i = 0; i < config.enemy_count; ++i) {
+            switch (random_int(0, static_cast<int>(config.max_armor))) {
+                case 0:  queue.push_back(SpawnKind::REGULAR); break;
+                case 1:  queue.push_back(SpawnKind::CONEHEAD); break;
+                default: queue.push_back(SpawnKind::BUCKETHEAD); break;
+            }
+        }
+        return queue;
+    }
+
+    // Wave cuối: đúng 4 Regular + 3 Conehead + 2 Buckethead + 1 Gargantuar.
+    // Thứ tự Zombie thường được xáo trộn; Gargantuar luôn xuất hiện sau
+    // FINAL_WAVE_ORDINARY_BEFORE_BOSS Zombie thường đầu tiên, phần còn lại theo sau.
+    std::vector<SpawnKind> ordinary;
+    ordinary.insert(ordinary.end(), FINAL_WAVE_REGULARS, SpawnKind::REGULAR);
+    ordinary.insert(ordinary.end(), FINAL_WAVE_CONEHEADS, SpawnKind::CONEHEAD);
+    ordinary.insert(ordinary.end(), FINAL_WAVE_BUCKETHEADS, SpawnKind::BUCKETHEAD);
+    std::shuffle(ordinary.begin(), ordinary.end(), random_engine);
+
+    for (std::size_t i = 0; i < ordinary.size(); ++i) {
+        if (static_cast<int>(i) == FINAL_WAVE_ORDINARY_BEFORE_BOSS) {
+            queue.insert(queue.end(), FINAL_WAVE_GARGANTUARS, SpawnKind::GARGANTUAR);
+        }
+        queue.push_back(ordinary[i]);
+    }
+
+    return queue;
+}
+
+
 void WaveManager::start_wave(int wave_number) {
     if (wave_number <= 0 || wave_number > TOTAL_WAVES) {
         return;
@@ -104,9 +182,11 @@ void WaveManager::start_wave(int wave_number) {
 
     preparation_left = 0.0;
     current_wave = wave_number;
-    zombies_to_spawn = WAVES[wave_number - 1].zombie_count;
+    spawn_queue = build_queue(wave_number);
+    queue_index = 0;
+    wave_started_event = wave_number;
 
-    // Zombie đầu tiên của wave xuất hiện ngay ở lần update kế tiếp.
+    // Kẻ địch đầu tiên của wave xuất hiện ngay ở lần update kế tiếp.
     spawn_timer = 0.0;
     next_spawn_delay = 0.0;
     wave_break_timer = 0.0;
@@ -115,7 +195,14 @@ void WaveManager::start_wave(int wave_number) {
 void WaveManager::begin_preparation(double seconds) {
     preparation_left = seconds > 0.0 ? seconds : 0.0;
     current_wave = 0;
-    zombies_to_spawn = 0;
+    spawn_queue.clear();
+    queue_index = 0;
+    enemies_spawned = 0;
+    wave_started_event = 0;
+    warning_event = false;
+    warning_fired = false;
+    final_banner_event = false;
+    final_banner_fired = false;
     spawn_timer = 0.0;
     next_spawn_delay = 0.0;
     wave_break_timer = 0.0;
@@ -133,8 +220,34 @@ double WaveManager::get_preparation_time_left() const {
     return preparation_left;
 }
 
+int WaveManager::consume_wave_started() {
+    const int wave = wave_started_event;
+    wave_started_event = 0;
+    return wave;
+}
+
+bool WaveManager::consume_final_wave_banner() {
+    const bool fired = final_banner_event;
+    final_banner_event = false;
+    return fired;
+}
+
+bool WaveManager::consume_huge_wave_warning() {
+    const bool fired = warning_event;
+    warning_event = false;
+    return fired;
+}
+
+int WaveManager::get_enemies_spawned() const {
+    return enemies_spawned;
+}
+
+int WaveManager::get_enemies_queued() const {
+    return static_cast<int>(spawn_queue.size() - queue_index);
+}
+
 bool WaveManager::is_finished() const {
-    return current_wave >= TOTAL_WAVES && zombies_to_spawn <= 0;
+    return current_wave >= TOTAL_WAVES && queue_index >= spawn_queue.size();
 }
 
 void WaveManager::update(double delta_seconds) {
@@ -142,7 +255,7 @@ void WaveManager::update(double delta_seconds) {
         return;
     }
 
-    // Giai đoạn chuẩn bị: không spawn Zombie nào.
+    // Giai đoạn chuẩn bị: không spawn gì.
     if (preparation_left > 0.0) {
         preparation_left -= delta_seconds;
 
@@ -153,23 +266,41 @@ void WaveManager::update(double delta_seconds) {
         start_wave(1);
     }
 
-    if (zombies_to_spawn <= 0) {
+    if (queue_index >= spawn_queue.size()) {
         // Chưa bắt đầu wave nào, hoặc đã xong wave cuối.
         if (current_wave <= 0 || is_finished()) {
             return;
         }
 
         // Wave hiện tại đã spawn xong -> nghỉ rồi sang wave kế.
+        const bool next_is_final = current_wave + 1 == TOTAL_WAVES;
+
+        // Cảnh báo wave cuối: đúng một lần, ngay khi khoảng nghỉ trước wave cuối bắt đầu.
+        if (next_is_final && !warning_fired) {
+            warning_fired = true;
+            warning_event = true;
+        }
+
         wave_break_timer += delta_seconds;
 
-        if (wave_break_timer < WAVE_BREAK_SECONDS - TIME_EPSILON) {
+        // Banner thứ hai ("Final Wave") bắt đầu ngay khi banner thứ nhất hết slot của nó.
+        if (next_is_final && !final_banner_fired &&
+            wave_break_timer >= HUGE_WAVE_BANNER_SECONDS - TIME_EPSILON) {
+            final_banner_fired = true;
+            final_banner_event = true;
+        }
+
+        const double break_seconds =
+            next_is_final ? FINAL_WAVE_BREAK_SECONDS : WAVE_BREAK_SECONDS;
+
+        if (wave_break_timer < break_seconds - TIME_EPSILON) {
             return;
         }
 
         start_wave(current_wave + 1);
     }
 
-    // Check before accumulating: the first Zombie of a wave spawns in the
+    // Check before accumulating: the first enemy of a wave spawns in the
     // frame the wave starts, and later ones exactly spawn_interval apart.
     if (spawn_timer < next_spawn_delay - TIME_EPSILON) {
         spawn_timer += delta_seconds;
@@ -179,22 +310,11 @@ void WaveManager::update(double delta_seconds) {
     const WaveConfig& config = WAVES[current_wave - 1];
 
     // Random row from 0 to 4
-    int row = random_int(0, 4);
+    const int row = random_int(0, 4);
 
-    // Random zombie type, limited to the types allowed in this wave.
-    int zombie_type = random_int(0, static_cast<int>(config.max_armor));
-
-    if (zombie_type == 0) {
-        spawn_regular(row, SPAWN_COLUMN);
-    }
-    else if (zombie_type == 1) {
-        spawn_conehead(row, SPAWN_COLUMN);
-    }
-    else {
-        spawn_buckethead(row, SPAWN_COLUMN);
-    }
-
-    zombies_to_spawn--;
+    spawn_kind(spawn_queue[queue_index], row, SPAWN_COLUMN);
+    ++queue_index;
+    ++enemies_spawned;
 
     // Keep the leftover time so the cadence stays exact (not frame-rounded).
     spawn_timer -= next_spawn_delay;

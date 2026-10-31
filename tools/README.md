@@ -8,6 +8,9 @@ this folder from a supplied source file. The source files are never modified.
 | `zombie_art/generate_zombies.py` | (procedural, original art) → `assets/zombies/*.png`. See `zombie_art/README.md` |
 | `lawn_art/make_lawn.py` | `grid.jpg` → `assets/lawn/lawn_game.jpg`. See `lawn_art/README.md` |
 | `ui_art/prepare_ui_assets.py` | `assets/ui/buttons.jpg` → `assets/ui/buttons/*.png`; `assets/projectiles/shoot.jpg` → `assets/projectiles/pea_projectile.png` |
+| `ui_art/make_nav_buttons.py` | `assets/ui/buttons/quit.png` → `next.png`, `back.png`, `leaderboard.png` (same style, new lettering; also `tick.png` is cut by `prepare_ui_assets.py`) |
+| `character_art/build_all.py` | `assets/references/original_pvz/*`, `assets/env/lawn_mower/lawn_mover_all.png`, `assets/projectiles/Projectiles.png` (pea) → `assets/characters/**` (plants, zombies, Gargantuar, Imp, mower) |
+| `plant_art/build_assets.py` | supplied sheets → `assets/plants/wall-nut/wallnut_{1,2,3}.png`, `plants/jalapeno/jalapeno_face.png`, `plants/sunflower/sunflower_full.png`, `env/shovel/shovel_cutout.png`, `zombies/armor/*`, `ui/{final_wave,huge_wave}_text.png` (see its header) |
 | `ui_art/make_menu_background.py` | `assets/menu.jpg` → `assets/ui/menu_background.jpg` |
 | `peashooter/build_peashooter.py` | `assets/plants/peashooter/168191.png` → `parts/*.png`, `layout.json`, `peashooter_layout.gd`, `peashooter/mockup.png` |
 | `audio/fmp4_to_adts.py` + `audio/convert_music.m` | `assets/audio/{menu,gameplay_music}.m4a` → `.ogg` |
@@ -74,7 +77,7 @@ OGG copies.
 | Peashooter projectile hits a zombie (`projectile_hit` signal; nothing on launch or miss) | `peashooter.mp3` | 0.89 s |
 | Zombie eating (loop while any zombie eats) | `zombie_eating.mp3` | 1.20 s |
 | Victory | `win.mp3` | 0.13 s |
-| Chili explosion | `chilli_explosion.mp3` | 0.13 s |
+| Jalapeno explosion | `jalapeno_explosion.mp3` | 0.13 s |
 | Sun collected | `sun_collect.mp3` | 0.03 s |
 | Defeat | `lose.mp3` | 0.37 s |
 | Once per game, 3 s (game time) before the first zombie spawns | `The zombies are coming Plants vs Zombies Sound Effect.mp3` | 1.10 s |

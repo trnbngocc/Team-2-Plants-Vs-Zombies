@@ -23,6 +23,7 @@ Zombie::Zombie(
       speed(initial_speed),
       armor_type(initial_armor),
       armor_health(std::max(0, initial_armor_health)),
+      max_armor_health(std::max(0, initial_armor_health)),
       column_position(static_cast<float>(initial_position.column)),
       max_health(std::max(0, initial_health)),
       id(next_zombie_id++) {
@@ -54,6 +55,10 @@ bool Zombie::has_reached_house() const {
 
 Zombie::ArmorType Zombie::get_armor_type() const {
     return armor_type;
+}
+
+int Zombie::get_max_armor_health() const {
+    return max_armor_health;
 }
 
 int Zombie::get_armor_health() const {
@@ -128,6 +133,29 @@ void Zombie::set_grid(Grid* grid_ref) {
     grid = grid_ref;
 }
 
+void Zombie::set_column_position(float column) {
+    column_position = column;
+
+    set_position(
+        GridPosition{
+            get_position().row,
+            static_cast<int>(std::floor(column_position))
+        }
+    );
+}
+
+void Zombie::knock_back(float columns) {
+    if (!is_alive() || columns <= 0.0f) {
+        return;
+    }
+
+    // Không đẩy ra ngoài mép phải của Grid (cột spawn).
+    set_column_position(std::min(
+        column_position + columns,
+        static_cast<float>(Grid::COLUMNS) - 0.01f
+    ));
+}
+
 void Zombie::default_update(double delta_seconds) {
     if (!is_alive() || grid == nullptr) {
         return;
@@ -146,8 +174,8 @@ void Zombie::default_update(double delta_seconds) {
     if (blocker != nullptr && blocker->is_alive()) {
         attack_cooldown += delta_seconds;
 
-        if (attack_cooldown >= ATTACK_INTERVAL) {
-            attack_cooldown -= ATTACK_INTERVAL;
+        if (attack_cooldown >= attack_interval) {
+            attack_cooldown -= attack_interval;
             blocker->take_damage(damage);
         }
     }

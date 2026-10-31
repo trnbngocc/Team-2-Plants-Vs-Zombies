@@ -18,6 +18,7 @@ private:
     static constexpr int    COST                  = 50;
     static constexpr double INTERVAL              = 5.0;  // giây giữa hai lần rớt Sun (game time)
     static constexpr int    GOLD_SUN_VALUE        = 25;   // Mặt trời vàng
+    static constexpr double FALL_DURATION         = 1.2;  // giây Sun rơi từ trên xuống bãi cỏ (chỉ hiển thị)
 
     double timer = 0.0;
     bool ready = false;
