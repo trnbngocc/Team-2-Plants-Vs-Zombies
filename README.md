@@ -35,7 +35,7 @@ Concepts you can study in this code base (all of them are actually used):
 | Separation of logic and presentation | the C++ core never draws; `main_game.gd` only reads core data and calls core functions |
 | Assets and tools | scripted asset preparation in `tools/` (cropping, background removal, audio conversion, procedural sprite generation) |
 | Testing | stand-alone C++ unit tests in `test/` |
-| Git and teamwork | feature branches and pull requests (see the repository history) |
+| Git and teamwork | individual module development and code submission for central integration |
 
 ### C. Features
 
@@ -221,7 +221,7 @@ Các khái niệm có thể học trong mã nguồn (đều được dùng thậ
 | Tách logic và hiển thị | lõi C++ không bao giờ vẽ; `main_game.gd` chỉ đọc dữ liệu và gọi hàm của lõi |
 | Tài nguyên và công cụ | chuẩn bị tài nguyên bằng script trong `tools/` (cắt ảnh, xoá nền, chuyển đổi âm thanh, sinh sprite bằng code) |
 | Kiểm thử | unit test C++ độc lập trong `test/` |
-| Git và làm việc nhóm | nhánh tính năng và pull request (xem lịch sử repository) |
+| Git và làm việc nhóm | tự viết code module riêng và gửi để team lead tổng hợp/up lên repository |
 
 ### C. Các tính năng
 
