@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://dv1866yexrw1n"]
+
+[ext_resource type="Script" path="res://stone_button.gd" id="1_btn"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/pause.png" id="2_pause"]
+
+[node name="Control" type="Control" unique_id=490756617]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Button" type="TextureButton" parent="." unique_id=929212517]
+custom_minimum_size = Vector2(97, 40)
+layout_mode = 0
+offset_right = 97.0
+offset_bottom = 40.0
+texture_normal = ExtResource("2_pause")
+script = ExtResource("1_btn")

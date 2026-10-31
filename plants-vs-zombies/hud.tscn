@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://bm0lgub2oipvp"]
+
+[ext_resource type="PackedScene" uid="uid://d3b1hfl57ctb0" path="res://sun_display.tscn" id="1_8sq4i"]
+[ext_resource type="PackedScene" uid="uid://dv1866yexrw1n" path="res://pause_button.tscn" id="2_640wx"]
+[ext_resource type="PackedScene" uid="uid://bj6vf5pwaewwr" path="res://seed_bank.tscn" id="3_a2258"]
+
+[node name="Control" type="Control" unique_id=2083884377]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="seed_bank" parent="." unique_id=1380353143 instance=ExtResource("3_a2258")]
+layout_mode = 0
+
+[node name="sun_display" parent="." unique_id=440363022 instance=ExtResource("1_8sq4i")]
+layout_mode = 0
+
+[node name="pause_button" parent="." unique_id=490756617 instance=ExtResource("2_640wx")]
+layout_mode = 0
+offset_left = 1052.0
+offset_top = 4.0
+offset_right = 1147.0
+offset_bottom = 40.0

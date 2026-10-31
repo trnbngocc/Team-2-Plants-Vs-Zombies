@@ -1,0 +1,137 @@
+[gd_scene format=3 uid="uid://bj6vf5pwaewwr"]
+
+[ext_resource type="Texture2D" uid="uid://cie3egkd4i3lm" path="res://assets/seed_bank.jpg" id="1_bank"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_card"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hover"]
+bg_color = Color(1, 1, 1, 0.15)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_selected"]
+bg_color = Color(1, 1, 0.4, 0.18)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.9, 0.1, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="Control" type="Control" unique_id=1380353143]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Toolbar" type="TextureRect" parent="." unique_id=1380353144]
+layout_mode = 0
+offset_right = 897.882
+offset_bottom = 96.0
+mouse_filter = 2
+texture = ExtResource("1_bank")
+expand_mode = 1
+
+[node name="Sunflower" type="Button" parent="." unique_id=1310981133]
+layout_mode = 0
+offset_left = 88.0
+offset_top = 11.0
+offset_right = 141.0
+offset_bottom = 88.0
+tooltip_text = "Sunflower (50 sun)"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_card")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_card")
+
+[node name="Selected" type="Panel" parent="Sunflower" unique_id=1380353150]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_selected")
+
+[node name="Peashooter" type="Button" parent="." unique_id=1530265892]
+layout_mode = 0
+offset_left = 145.0
+offset_top = 11.0
+offset_right = 198.0
+offset_bottom = 88.0
+tooltip_text = "Peashooter (100 sun)"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_card")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_card")
+
+[node name="Selected" type="Panel" parent="Peashooter" unique_id=1380353151]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_selected")
+
+[node name="WallNut" type="Button" parent="." unique_id=95198893]
+layout_mode = 0
+offset_left = 203.0
+offset_top = 11.0
+offset_right = 256.0
+offset_bottom = 88.0
+tooltip_text = "Wall-nut (50 sun)"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_card")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_card")
+
+[node name="Selected" type="Panel" parent="WallNut" unique_id=1380353152]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_selected")
+
+[node name="CherryBomb" type="Button" parent="." unique_id=432457655]
+layout_mode = 0
+offset_left = 260.0
+offset_top = 11.0
+offset_right = 313.0
+offset_bottom = 88.0
+tooltip_text = "Chili Pepper (125 sun)"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_card")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_card")
+
+[node name="Selected" type="Panel" parent="CherryBomb" unique_id=1380353153]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_selected")

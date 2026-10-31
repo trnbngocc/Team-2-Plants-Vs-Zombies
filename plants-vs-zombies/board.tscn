@@ -1,0 +1,509 @@
+[gd_scene format=3 uid="uid://cgg0d4jypyqmw"]
+
+[ext_resource type="Script" path="res://board.gd" id="0_board"]
+[ext_resource type="Texture2D" path="res://assets/lawn/lawn_game.jpg" id="1_lawn"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_cell"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hover"]
+bg_color = Color(1, 1, 1, 0.12)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 1, 0.6, 0.6)
+
+[node name="Control" type="Control" unique_id=938220823]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("0_board")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=938220825]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.58, 0.55, 0.47, 1)
+
+[node name="Field" type="Control" parent="." unique_id=938220826]
+layout_mode = 0
+mouse_filter = 2
+
+[node name="Lawn" type="TextureRect" parent="Field" unique_id=938220824]
+layout_mode = 0
+offset_left = -153.0
+offset_top = -153.0
+offset_right = 1282.65
+offset_bottom = 808.35
+mouse_filter = 2
+texture = ExtResource("1_lawn")
+expand_mode = 1
+
+[node name="GridContainer" type="GridContainer" parent="Field" unique_id=896935692]
+layout_mode = 0
+offset_left = 272.0
+offset_top = 78.0
+offset_right = 1088.0
+offset_bottom = 630.0
+mouse_filter = 2
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+columns = 9
+
+[node name="Button" type="Button" parent="Field/GridContainer" unique_id=303582597]
+custom_minimum_size = Vector2(98, 118)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button2" type="Button" parent="Field/GridContainer" unique_id=382704617]
+custom_minimum_size = Vector2(76, 118)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button3" type="Button" parent="Field/GridContainer" unique_id=848387601]
+custom_minimum_size = Vector2(96, 118)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button4" type="Button" parent="Field/GridContainer" unique_id=1528344718]
+custom_minimum_size = Vector2(85, 118)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button5" type="Button" parent="Field/GridContainer" unique_id=1164633107]
+custom_minimum_size = Vector2(91, 118)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button6" type="Button" parent="Field/GridContainer" unique_id=218416692]
+custom_minimum_size = Vector2(88, 118)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button7" type="Button" parent="Field/GridContainer" unique_id=787554373]
+custom_minimum_size = Vector2(80, 118)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button8" type="Button" parent="Field/GridContainer" unique_id=230448347]
+custom_minimum_size = Vector2(92, 118)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button9" type="Button" parent="Field/GridContainer" unique_id=2125553324]
+custom_minimum_size = Vector2(110, 118)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button10" type="Button" parent="Field/GridContainer" unique_id=654099879]
+custom_minimum_size = Vector2(98, 102)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button11" type="Button" parent="Field/GridContainer" unique_id=629605458]
+custom_minimum_size = Vector2(76, 102)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button12" type="Button" parent="Field/GridContainer" unique_id=474341148]
+custom_minimum_size = Vector2(96, 102)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button13" type="Button" parent="Field/GridContainer" unique_id=940643919]
+custom_minimum_size = Vector2(85, 102)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button14" type="Button" parent="Field/GridContainer" unique_id=342736949]
+custom_minimum_size = Vector2(91, 102)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button15" type="Button" parent="Field/GridContainer" unique_id=304745854]
+custom_minimum_size = Vector2(88, 102)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button16" type="Button" parent="Field/GridContainer" unique_id=984896302]
+custom_minimum_size = Vector2(80, 102)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button17" type="Button" parent="Field/GridContainer" unique_id=1455539830]
+custom_minimum_size = Vector2(92, 102)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button18" type="Button" parent="Field/GridContainer" unique_id=718605547]
+custom_minimum_size = Vector2(110, 102)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button19" type="Button" parent="Field/GridContainer" unique_id=1322502068]
+custom_minimum_size = Vector2(98, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button20" type="Button" parent="Field/GridContainer" unique_id=1585775995]
+custom_minimum_size = Vector2(76, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button21" type="Button" parent="Field/GridContainer" unique_id=158191930]
+custom_minimum_size = Vector2(96, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button22" type="Button" parent="Field/GridContainer" unique_id=630326186]
+custom_minimum_size = Vector2(85, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button23" type="Button" parent="Field/GridContainer" unique_id=1388035043]
+custom_minimum_size = Vector2(91, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button24" type="Button" parent="Field/GridContainer" unique_id=93795143]
+custom_minimum_size = Vector2(88, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button25" type="Button" parent="Field/GridContainer" unique_id=1704890116]
+custom_minimum_size = Vector2(80, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button26" type="Button" parent="Field/GridContainer" unique_id=953508457]
+custom_minimum_size = Vector2(92, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button27" type="Button" parent="Field/GridContainer" unique_id=1874429336]
+custom_minimum_size = Vector2(110, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button28" type="Button" parent="Field/GridContainer" unique_id=811099412]
+custom_minimum_size = Vector2(98, 94)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button29" type="Button" parent="Field/GridContainer" unique_id=874544065]
+custom_minimum_size = Vector2(76, 94)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button30" type="Button" parent="Field/GridContainer" unique_id=1982971307]
+custom_minimum_size = Vector2(96, 94)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button31" type="Button" parent="Field/GridContainer" unique_id=1512548360]
+custom_minimum_size = Vector2(85, 94)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button32" type="Button" parent="Field/GridContainer" unique_id=481395887]
+custom_minimum_size = Vector2(91, 94)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button33" type="Button" parent="Field/GridContainer" unique_id=531313148]
+custom_minimum_size = Vector2(88, 94)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button34" type="Button" parent="Field/GridContainer" unique_id=44836573]
+custom_minimum_size = Vector2(80, 94)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button35" type="Button" parent="Field/GridContainer" unique_id=329360955]
+custom_minimum_size = Vector2(92, 94)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button36" type="Button" parent="Field/GridContainer" unique_id=30966490]
+custom_minimum_size = Vector2(110, 94)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button37" type="Button" parent="Field/GridContainer" unique_id=88068938]
+custom_minimum_size = Vector2(98, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button38" type="Button" parent="Field/GridContainer" unique_id=19325559]
+custom_minimum_size = Vector2(76, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button39" type="Button" parent="Field/GridContainer" unique_id=862207083]
+custom_minimum_size = Vector2(96, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button40" type="Button" parent="Field/GridContainer" unique_id=1988385761]
+custom_minimum_size = Vector2(85, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button41" type="Button" parent="Field/GridContainer" unique_id=24692746]
+custom_minimum_size = Vector2(91, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button42" type="Button" parent="Field/GridContainer" unique_id=460955357]
+custom_minimum_size = Vector2(88, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button43" type="Button" parent="Field/GridContainer" unique_id=1588736927]
+custom_minimum_size = Vector2(80, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button44" type="Button" parent="Field/GridContainer" unique_id=763250872]
+custom_minimum_size = Vector2(92, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")
+
+[node name="Button45" type="Button" parent="Field/GridContainer" unique_id=2147010746]
+custom_minimum_size = Vector2(110, 119)
+layout_mode = 2
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_cell")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_cell")

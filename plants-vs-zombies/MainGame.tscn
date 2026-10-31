@@ -1,0 +1,93 @@
+[gd_scene format=3 uid="uid://dmwvqs4bqnrml"]
+
+[ext_resource type="Script" uid="uid://byilx80xe6eub" path="res://main_game.gd" id="1_8qpgq"]
+[ext_resource type="PackedScene" uid="uid://cgg0d4jypyqmw" path="res://board.tscn" id="1_bqqt8"]
+[ext_resource type="PackedScene" uid="uid://bm0lgub2oipvp" path="res://hud.tscn" id="2_8qpgq"]
+[ext_resource type="PackedScene" uid="uid://dygpkep21tods" path="res://win_screen.tscn" id="3_pv6b4"]
+[ext_resource type="PackedScene" uid="uid://bejlhbvnnys0v" path="res://lose_screen.tscn" id="4_8dnxm"]
+[ext_resource type="Script" path="res://stone_title.gd" id="5_title"]
+[ext_resource type="Script" path="res://stone_button.gd" id="6_btn"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/play.png" id="7_play"]
+[ext_resource type="Texture2D" path="res://assets/ui/buttons/quit.png" id="8_quit"]
+
+[node name="Control" type="Control" unique_id=875060893]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_8qpgq")
+
+[node name="board" parent="." unique_id=938220823 instance=ExtResource("1_bqqt8")]
+layout_mode = 1
+
+[node name="hud" parent="." unique_id=2083884377 instance=ExtResource("2_8qpgq")]
+layout_mode = 1
+
+[node name="OverlayLayer" type="CanvasLayer" parent="." unique_id=1873350500]
+layer = 1
+
+[node name="pause_overlay" type="ColorRect" parent="OverlayLayer" unique_id=1873350401]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="Title" type="Control" parent="OverlayLayer/pause_overlay" unique_id=1873350402]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.42
+anchor_right = 0.5
+anchor_bottom = 0.42
+offset_left = -380.0
+offset_top = -60.0
+offset_right = 380.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_title")
+text = "PAUSED"
+pixel = 12.0
+
+[node name="Buttons" type="HBoxContainer" parent="OverlayLayer/pause_overlay" unique_id=1873350403]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.64
+anchor_right = 0.5
+anchor_bottom = 0.64
+offset_left = -170.0
+offset_top = -46.0
+offset_right = 170.0
+offset_bottom = 46.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="Resume" type="TextureButton" parent="OverlayLayer/pause_overlay/Buttons" unique_id=1873350404]
+custom_minimum_size = Vector2(110, 92)
+layout_mode = 2
+texture_normal = ExtResource("7_play")
+script = ExtResource("6_btn")
+
+[node name="Quit" type="TextureButton" parent="OverlayLayer/pause_overlay/Buttons" unique_id=1873350405]
+custom_minimum_size = Vector2(210, 92)
+layout_mode = 2
+texture_normal = ExtResource("8_quit")
+script = ExtResource("6_btn")
+
+[node name="win_screen" parent="OverlayLayer" unique_id=246327784 instance=ExtResource("3_pv6b4")]
+visible = false
+layout_mode = 3
+
+[node name="lose_screen" parent="OverlayLayer" unique_id=1051293685 instance=ExtResource("4_8dnxm")]
+visible = false
+layout_mode = 3

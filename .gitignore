@@ -1,0 +1,79 @@
+# Godot 4+ specific ignores
+.godot/
+.nomedia
+
+# Godot-specific ignores
+.import/
+export.cfg
+export_credentials.cfg
+*.tmp
+
+# Imported translations (automatically generated from CSV files)
+*.translation
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+# Godot temporary files
+.godot/
+
+# GDExtension build output
+plants-vs-zombies/bin/*.dll
+plants-vs-zombies/bin/*.exp
+plants-vs-zombies/bin/*.lib
+plants-vs-zombies/bin/*.pdb
+
+# C++ build artifacts
+*.obj
+*.o
+*.os
+*.so
+*.dylib
+compile_commands.json
+# SCons cache
+.sconsign.dblite
+
+# Local tools, AI assistants and analysis output (never publish)
+.claude/
+.graphify/
+graphify-out/
+graphify-full/
+.vscode/
+.env
+.env.*
+
+# Godot editor's temporary copy of a locked GDExtension DLL
+plants-vs-zombies/bin/~*.dll
+
+# Python / OS junk
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Third-party assets kept OUT of the public repository (licence not cleared).
+# The team keeps local copies; README.md lists what to add before running.
+plants-vs-zombies/assets/audio/
+plants-vs-zombies/grid.jpg*
+plants-vs-zombies/menu.jpg*
+plants-vs-zombies/assets/grid.jpg*
+plants-vs-zombies/assets/menu.jpg*
+plants-vs-zombies/assets/seed_bank.jpg*
+plants-vs-zombies/assets/168191.png*
+plants-vs-zombies/assets/pea.png*
+plants-vs-zombies/assets/chilli.png*
+plants-vs-zombies/assets/sunflower (1).png*
+plants-vs-zombies/assets/wallnut (1).png*
+plants-vs-zombies/assets/sưnn.png*
+plants-vs-zombies/assets/lawn/
+plants-vs-zombies/assets/plants/peashooter/168191.png*
+plants-vs-zombies/assets/plants/peashooter/parts/
+plants-vs-zombies/assets/plants/peashooter/layout.json
+plants-vs-zombies/assets/ui/
+plants-vs-zombies/assets/projectiles/
+
+# Generated review images
+tools/zombie_art/preview.png
+tools/peashooter/mockup.png
