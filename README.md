@@ -143,9 +143,8 @@ These match the project configuration; other setups have not been tested.
 
 1. Clone the repository, including the submodule:
    ```
-   git clone --recurse-submodules https://github.com/trnbngocc/Team2_PlantsvsZombies.git
-   cd Team2_PlantsvsZombies
-   git checkout feature/integration-zombie-plant-ui-test
+   git clone --recurse-submodules https://github.com/trnbngocc/Team-2-Plants-Vs-Zombies.git
+   cd Team-2-Plants-Vs-Zombies
    git submodule update --init
    ```
 2. Build the GDExtension (from the repository root, in a terminal where SCons and the compiler are available):
@@ -329,9 +328,8 @@ Phần này khớp với cấu hình dự án; các môi trường khác chưa �
 
 1. Clone repository kèm submodule:
    ```
-   git clone --recurse-submodules https://github.com/trnbngocc/Team2_PlantsvsZombies.git
-   cd Team2_PlantsvsZombies
-   git checkout feature/integration-zombie-plant-ui-test
+   git clone --recurse-submodules https://github.com/trnbngocc/Team-2-Plants-Vs-Zombies.git
+   cd Team-2-Plants-Vs-Zombies
    git submodule update --init
    ```
 2. Build GDExtension (tại thư mục gốc repository, trong terminal có SCons và trình biên dịch):
