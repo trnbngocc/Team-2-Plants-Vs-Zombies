@@ -24,6 +24,33 @@ int SunEconomy::spawn_sun(GridPosition pos, int value) {
     return drop.id;
 }
 
+int SunEconomy::spawn_falling_sun(
+    int row,
+    float column,
+    int value,
+    double fall_duration
+) {
+    if (value <= 0 || fall_duration < 0.0) {
+        return -1;
+    }
+    if (row < 0 || row >= Grid::ROWS ||
+        column < 0.0f || column > static_cast<float>(Grid::COLUMNS - 1)) {
+        return -1;
+    }
+
+    SunDrop drop;
+    drop.id = next_id++;
+    drop.value = value;
+    drop.row = row;
+    drop.column = column;
+    drop.time_left = SUN_LIFETIME + fall_duration;
+    drop.age = 0.0;
+    drop.fall_duration = fall_duration;
+
+    suns.push_back(drop);
+    return drop.id;
+}
+
 int SunEconomy::collect_sun(int id) {
     for (auto it = suns.begin(); it != suns.end(); ++it) {
         if (it->id == id) {
@@ -42,6 +69,7 @@ void SunEconomy::update(double delta_seconds) {
 
     for (SunDrop& s : suns) {
         s.time_left -= delta_seconds;
+        s.age += delta_seconds;
     }
 
     suns.erase(

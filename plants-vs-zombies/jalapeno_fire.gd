@@ -1,10 +1,10 @@
-class_name ChiliFire
+class_name JalapenoFire
 extends Node2D
-## chili_fire.gd - visual-only row of fire for the Chili Pepper explosion.
+## jalapeno_fire.gd - visual-only row of fire for the Jalapeno explosion.
 ##
-## Created by main_game.gd when GameController emits "chili_exploded" (the real
+## Created by main_game.gd when GameController emits "jalapeno_exploded" (the real
 ## explosion, after the existing 2 s fuse). Damage, targeting and timing all stay
-## in C++; this only draws: the blaze bursts from the chili, races to both ends of
+## in C++; this only draws: the blaze bursts from the jalapeno, races to both ends of
 ## the row, burns for a moment, then dies down into smoke and frees itself.
 
 const SPREAD_TIME := 0.35
@@ -13,16 +13,16 @@ const FADE_TIME := 0.5
 const STEP := 11.0            # spacing between flame tongues
 const FLAME_HEIGHT := 70.0
 
-var x_from := 0.0             # row ends and the chili's position, in parent coordinates
+var x_from := 0.0             # row ends and the jalapeno's position, in parent coordinates
 var x_to := 0.0
 var origin_x := 0.0
 var _t := 0.0
 
 
-func setup(row_left: float, row_right: float, chili_x: float, ground_y: float) -> void:
+func setup(row_left: float, row_right: float, jalapeno_x: float, ground_y: float) -> void:
 	x_from = row_left
 	x_to = row_right
-	origin_x = chili_x
+	origin_x = jalapeno_x
 	position = Vector2(0, ground_y)
 
 

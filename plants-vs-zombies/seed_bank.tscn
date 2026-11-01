@@ -110,13 +110,13 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_selected")
 
-[node name="CherryBomb" type="Button" parent="." unique_id=432457655]
+[node name="Jalapeno" type="Button" parent="." unique_id=432457655]
 layout_mode = 0
 offset_left = 260.0
 offset_top = 11.0
 offset_right = 313.0
 offset_bottom = 88.0
-tooltip_text = "Chili Pepper (125 sun)"
+tooltip_text = "Jalapeno (125 sun)"
 focus_mode = 0
 mouse_default_cursor_shape = 2
 theme_override_styles/normal = SubResource("StyleBoxEmpty_card")
@@ -125,7 +125,33 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_card")
 
-[node name="Selected" type="Panel" parent="CherryBomb" unique_id=1380353153]
+[node name="Selected" type="Panel" parent="Jalapeno" unique_id=1380353153]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_selected")
+
+[node name="Squash" type="Button" parent="." unique_id=432457656]
+layout_mode = 0
+offset_left = 317.0
+offset_top = 11.0
+offset_right = 370.0
+offset_bottom = 88.0
+tooltip_text = "Squash (50 sun)"
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_card")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_card")
+theme_override_styles/hover = SubResource("StyleBoxFlat_hover")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_hover")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_card")
+
+[node name="Selected" type="Panel" parent="Squash" unique_id=1380353154]
 visible = false
 layout_mode = 1
 anchors_preset = 15

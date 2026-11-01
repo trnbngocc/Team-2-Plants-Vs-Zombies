@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Prepare processed UI copies from the supplied source images (sources are never modified).
 
-  assets/ui/buttons.jpg        -> assets/ui/buttons/{quit,pause,play,restart}.png
+  assets/ui/buttons.jpg        -> assets/ui/buttons/{quit,pause,play,restart,tick}.png
   assets/projectiles/shoot.jpg -> assets/projectiles/pea_projectile.png
 
 Buttons: each button is cropped from its measured region (plus a 3 px margin) and
@@ -26,6 +26,7 @@ BUTTONS = {
     "pause": (37, 502, 376, 641),    # "PAUSE" text button
     "play": (420, 502, 586, 641),    # play-triangle icon (Play / Resume)
     "restart": (220, 178, 386, 317), # circular-arrow icon (Play Again)
+    "tick": (1012, 337, 1172, 489),  # round confirm button (menu: confirm username)
 }
 MARGIN = 3
 WHITE_MIN = 200  # a pixel is background if all channels >= this and it touches the border

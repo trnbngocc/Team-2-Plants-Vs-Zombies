@@ -77,3 +77,7 @@ plants-vs-zombies/assets/projectiles/
 # Generated review images
 tools/zombie_art/preview.png
 tools/peashooter/mockup.png
+
+# Local test build output
+build/
+plants-vs-zombies/bin/*.a

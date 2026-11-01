@@ -1,20 +1,10 @@
 #include "peashooter.hpp"
 #include "game_controller.hpp"
 
-#include <random>
-
 namespace pvz {
 
 Peashooter::Peashooter(GridPosition pos)
     : Plant(pos, HEALTH, COST) {}
-
-bool Peashooter::roll_critical() {
-    // Một bộ sinh số ngẫu nhiên dùng chung cho mọi Peashooter, seed một lần.
-    // Tốt hơn rand() vì không phụ thuộc srand() và phân bố đều hơn (% 100).
-    static std::mt19937 rng{std::random_device{}()};
-    std::uniform_int_distribution<int> dice(0, 99);
-    return dice(rng) < CRIT_CHANCE_PERCENT;
-}
 
 void Peashooter::update(double delta_seconds) {
     if (!is_alive()) return;
@@ -39,16 +29,12 @@ void Peashooter::act(godot::GameController& controller) {
         return;
     }
 
-    // Chỉ gieo xác suất khi thật sự bắn, để không "lãng phí" lượt roll.
-    const int current_damage =
-        roll_critical() ? BASE_DAMAGE * CRIT_MULTIPLIER : BASE_DAMAGE;
-
     // Đạn xuất phát ngay tại miệng Peashooter (+0.2f thay vì +1.0f) để có thể
     // bắn trúng cả Zombie đang áp sát cắn cây.
     controller.spawn_bullet(
         pos.row,
         static_cast<float>(pos.column) + 0.2f,
-        current_damage
+        BASE_DAMAGE
     );
 }
 

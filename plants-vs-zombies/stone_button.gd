@@ -8,6 +8,7 @@ extends TextureButton
 
 const HOVER_TINT := Color(1.12, 1.12, 1.15)
 const PRESS_TINT := Color(0.82, 0.86, 0.9)
+const DISABLED_TINT := Color(0.6, 0.65, 0.7, 0.85)
 
 
 func _ready() -> void:
@@ -26,8 +27,11 @@ func _on_pressed() -> void:
 	Audio.play_sfx("click")
 
 
+## Callers that toggle `disabled` call this afterwards.
 func _refresh() -> void:
-	if is_pressed():
+	if disabled:
+		self_modulate = DISABLED_TINT
+	elif is_pressed():
 		self_modulate = PRESS_TINT
 	elif is_hovered():
 		self_modulate = HOVER_TINT

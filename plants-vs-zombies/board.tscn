@@ -1,7 +1,11 @@
 [gd_scene format=3 uid="uid://cgg0d4jypyqmw"]
 
 [ext_resource type="Script" path="res://board.gd" id="0_board"]
-[ext_resource type="Texture2D" path="res://assets/lawn/lawn_game.jpg" id="1_lawn"]
+[ext_resource type="Texture2D" path="res://assets/lawn/lawngrid-day.png" id="1_lawn"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lawn"]
+atlas = ExtResource("1_lawn")
+region = Rect2(5, 35, 1400, 600)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_cell"]
 
@@ -39,12 +43,12 @@ mouse_filter = 2
 
 [node name="Lawn" type="TextureRect" parent="Field" unique_id=938220824]
 layout_mode = 0
-offset_left = -153.0
-offset_top = -153.0
-offset_right = 1282.65
-offset_bottom = 808.35
+offset_left = -0.4
+offset_top = -26.2
+offset_right = 1530.8
+offset_bottom = 660.8
 mouse_filter = 2
-texture = ExtResource("1_lawn")
+texture = SubResource("AtlasTexture_lawn")
 expand_mode = 1
 
 [node name="GridContainer" type="GridContainer" parent="Field" unique_id=896935692]
