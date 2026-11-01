@@ -5,10 +5,12 @@ extends Node
 ## with an empty one and quitting discards it. It survives scene changes (menu <-> match <-> leaderboard) because
 ## this autoload lives for the whole run.
 ##
-## RESULT FLOW:
-##   match ends          -> add_result(): appended to `records` immediately, exactly once per match
-##   NEXT                -> leaderboard (view_mode = VIEW_POST_MATCH, the new row highlighted)
-##   BACK                -> main menu; navigation only, records untouched
+## ONE USERNAME = ONE LEADERBOARD ENTRY = ONE PLAYER SESSION:
+##   register a name (menu TICK) -> first match ends -> add_result() creates the entry (immediately, once per match)
+##   RESTART (post-match leaderboard) -> restart_match(): same name, a brand-new match; when it ends add_result()
+##                                    UPDATES that same entry with the latest result (never a second row)
+##   BACK                -> end_session(): back to the menu, the name stays registered (its entry stays on the board)
+##                          so nobody can start a new session with it; the next player needs a different name
 ##   menu leaderboard    -> read-only view (view_mode = VIEW_MENU)
 ##   menu Quit           -> the application exits; the records disappear with the process
 
@@ -26,8 +28,9 @@ var view_mode := VIEW_NONE
 
 var username := ""               # the player of the current / last match
 var username_accepted := false   # true once the menu's TICK confirmed a valid username
-var records: Array = []          # [{username, score, won}] in the order the matches ended
+var records: Array = []          # one {username, score, won, id} per player, in the order the players first finished
 var last_result := {}            # {username, score, won} of the match that just ended
+var last_id := -1                # id of the entry that match created or updated
 var _match_has_result := false   # this match already produced its record
 
 
@@ -37,15 +40,15 @@ static func normalize(raw: String) -> String:
 
 
 ## Validate a raw username. Returns {ok: bool, name: String, error: String}.
-## A name already on the board is a duplicate, except for the player who owns those records (the current session
-## player), who may play again under the same name.
+## A name that already has an entry on the board is a duplicate, whoever asks (a replay uses restart_match(), which
+## never goes through here).
 func validate_username(raw: String) -> Dictionary:
 	var name := normalize(raw)
 	if name.is_empty():
 		return {"ok": false, "name": name, "error": ERROR_EMPTY}
 	if name.length() > MAX_NAME_LENGTH:
 		return {"ok": false, "name": name, "error": ERROR_TOO_LONG % MAX_NAME_LENGTH}
-	if username_exists(name) and name.to_lower() != username.to_lower():
+	if username_exists(name):
 		return {"ok": false, "name": name, "error": ERROR_DUPLICATE}
 	return {"ok": true, "name": name, "error": ""}
 
@@ -69,11 +72,30 @@ func clear_accepted() -> void:
 	username_accepted = false
 
 
-## Start a new match for `name` from the main menu. Earlier results stay on the leaderboard.
+## Start a new player's first match from the main menu. Earlier entries stay on the leaderboard.
 func begin_match(name: String) -> void:
 	username = normalize(name)
 	_match_has_result = false
 	last_result = {}
+	last_id = -1
+	view_mode = VIEW_NONE
+
+
+## RESTART: the same player replays. Same username, a fresh match; its result updates the player's existing entry.
+func restart_match() -> void:
+	_match_has_result = false
+	last_result = {}
+	last_id = -1
+	view_mode = VIEW_NONE
+
+
+## BACK to the menu: the player's session is over. Their entry stays on the board, which keeps the name taken.
+func end_session() -> void:
+	username = ""
+	username_accepted = false
+	last_result = {}
+	last_id = -1
+	_match_has_result = false
 	view_mode = VIEW_NONE
 
 
@@ -82,16 +104,24 @@ static func score_for(won: bool, sun_spent: int) -> int:
 	return maxi(sun_spent, 0) if won else 0
 
 
-## The match is over: record it. Once per match; true only for the call that added it.
+## The match is over: record it. Once per match; true only for the call that stored it. The first match of a player
+## creates their entry; later matches (after RESTART) replace that entry's result with the latest one.
 func add_result(won: bool, sun_spent: int) -> bool:
 	if _match_has_result:
 		return false
 	_match_has_result = true
 	var name := username if not username.is_empty() else "Player"
 	last_result = {"username": name, "score": score_for(won, sun_spent), "won": won}
+	for r in records:
+		if String(r["username"]).to_lower() == name.to_lower():
+			r["score"] = last_result["score"]
+			r["won"] = last_result["won"]
+			last_id = int(r["id"])
+			return true
 	var rec := last_result.duplicate()
-	rec["id"] = records.size()      # insertion order; identifies the newest row for highlighting
+	rec["id"] = records.size()      # insertion order (ties); identifies the row for highlighting
 	records.append(rec)
+	last_id = int(rec["id"])
 	return true
 
 

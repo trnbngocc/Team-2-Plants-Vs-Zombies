@@ -31,14 +31,12 @@ var _busy := false          # leaving the menu: every button ignores further cli
 func _ready() -> void:
 	Audio.stop_gameplay_audio()
 	Audio.play_music("menu")
-	Session.clear_accepted()
+	Session.end_session()             # the menu means no player session is active
 	Session.view_mode = Session.VIEW_NONE
 	play_button = $Buttons/Play
 	quit_button = $Buttons/Quit
 	_build_username_box()
 	_build_leaderboard_button()
-	if not Session.username.is_empty():
-		name_edit.text = Session.username           # the returning player: shown, but still has to click TICK
 	play_button.pressed.connect(_on_play_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 	_refresh_play_state()
@@ -93,7 +91,7 @@ func _build_username_box() -> void:
 
 # LEADERBOARD: an image button of the same family, in the row next to PLAY and QUIT (it needs a wider face for its label).
 func _build_leaderboard_button() -> void:
-	leaderboard_button = StoneUI.make_image_button("leaderboard", Vector2(220, 96))
+	leaderboard_button = StoneUI.make_image_button("leaderboard", Vector2(184, 80))
 	leaderboard_button.pressed.connect(_on_leaderboard_pressed)
 	var buttons: Control = $Buttons
 	buttons.add_child(leaderboard_button)

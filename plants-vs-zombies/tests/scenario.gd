@@ -5,7 +5,7 @@ extends SceneTree
 ##
 ## Run:  Godot --path plants-vs-zombies --windowed --resolution 1152x648 --script res://tests/scenario.gd -- <mode> <out_dir>
 ## The leaderboard is in memory only; each mode is a fresh process seeded with Alice (Victory 450) and Bob (Defeat).
-## Modes: menu_quit | menu_board | username | match_victory | match_defeat | match_two | back_only | fresh_start
+## Modes: menu_quit | menu_board | username | match_victory | match_defeat | match_two | match_two_rev | back_only | fresh_start
 ## Prints "SCENARIO <mode>: N checks, M failures" and, for modes that quit, never returns (the process exits).
 
 const PEA := 0
@@ -133,6 +133,8 @@ func _run() -> void:
 			await scenario_match(["defeat"])
 		"match_two":
 			await scenario_match(["defeat", "victory"])
+		"match_two_rev":
+			await scenario_match(["victory", "defeat"])
 		"back_only":
 			await scenario_back_only()
 		"fresh_start":
@@ -270,10 +272,22 @@ func enter_menu_and_play(name: String) -> void:
 	await type_text(menu.name_edit, name)
 	await click(menu.tick_button)
 	await click(menu.play_button)
-	await create_timer(1.0).timeout
+	var t0 := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - t0 < 8000 and not (current_scene != null and current_scene.has_node("GameController")):
+		await frames(2)                                  # wait for the game scene instead of guessing a delay
 	await frames(8)
 
 
+func hero_entries(session: Node) -> Array:
+	var found := []
+	for r in session.records:
+		if r["username"] == "Hero":
+			found.append(r)
+	return found
+
+
+# Register Hero, play one match per entry of `kinds`, RESTARTing between them. The leaderboard must keep exactly ONE
+# Hero entry, holding the latest result. Then BACK ends the session: "Hero" is taken, another name is accepted.
 func scenario_match(kinds: Array) -> void:
 	var session: Node = root.get_node("Session")
 	var seed_count: int = session.records.size()
@@ -283,46 +297,60 @@ func scenario_match(kinds: Array) -> void:
 	for i in kinds.size():
 		var kind: String = kinds[i]
 		await play_match(kind, "match %d" % (i + 1))
-		check(session.records.size() == seed_count + i + 1, "the result is on the leaderboard right when the match ends (once)")
-		check(session.last_result.get("won", null) == (kind == "victory") and session.last_result["username"] == "Hero", "it is this match's result")
+		var entries := hero_entries(session)
+		check(session.records.size() == seed_count + 1 and entries.size() == 1, "exactly one Hero entry exists after match %d (%d)" % [i + 1, entries.size()])
+		check(entries[0]["won"] == (kind == "victory") and entries[0]["score"] == (3750 if kind == "victory" else 0), "the entry holds this match's result (%s)" % kind)
 		await frames(10)
-		check(session.records.size() == seed_count + i + 1, "waiting on the result screen adds no duplicate")
+		check(session.records.size() == seed_count + 1, "waiting on the result screen adds nothing")
 		var ui: Control = current_scene.get_node("Maingame")
 		var nxt: Control = ui._next_buttons[0] if kind == "victory" else ui._next_buttons[1]
 		check(nxt is TextureButton and nxt.texture_normal.resource_path.ends_with("buttons/next.png"), "NEXT is the image button")
-		await shot("%s_result" % kind)
+		await shot("%s_result_%d" % [kind, i + 1])
 		await click(nxt)
 		await click(nxt)
 		await frames(8)
 		check(current_scene.name == "Leaderboard" and session.view_mode == session.VIEW_POST_MATCH, "NEXT opens the leaderboard (no new match)")
-		check(session.records.size() == seed_count + i + 1, "opening the leaderboard adds nothing")
 		var lb := current_scene
-		var back: Control = lb.find_child("Back", true, false)
-		check(back != null, "BACK is visible")
+		check(lb.find_child("Restart", true, false) != null and lb.find_child("Back", true, false) != null, "RESTART and BACK are visible")
 		check(lb.find_child("PlayAgain", true, false) == null and lb.find_child("Quit", true, false) == null, "no Play Again / Quit")
 		var rows: Node = lb.find_child("Rows", true, false)
-		check(rows.get_child_count() == seed_count + i + 1, "the board lists all %d session results" % (seed_count + i + 1))
+		check(rows.get_child_count() == seed_count + 1, "the board lists %d entries" % (seed_count + 1))
 		await shot("leaderboard_%d" % (i + 1))
-		await click(back)
-		await click(back)                                    # a second click is harmless
-		await frames(8)
-		check(current_scene.name == "MainMenu", "BACK returns to the main menu")
-		check(session.records.size() == seed_count + i + 1, "BACK created no record")
 		if i < kinds.size() - 1:
-			await enter_menu_and_play("Hero")                # new match, same username
-			check(current_scene.has_node("GameController") and session.records.size() == seed_count + i + 1, "next match started, earlier results kept")
-	# the menu leaderboard shows every result of the session
-	await click(current_scene.leaderboard_button)
-	await frames(6)
-	var rows2: Node = current_scene.find_child("Rows", true, false)
-	check(rows2.get_child_count() == seed_count + kinds.size(), "the menu leaderboard shows all results")
-	var heroes := 0
-	for r in session.records:
-		if r["username"] == "Hero":
-			heroes += 1
-	check(heroes == kinds.size(), "one record per match, the same name may repeat")
+			var restart: Control = lb.find_child("Restart", true, false)
+			await click(restart)
+			await click(restart)                             # a second click is harmless
+			await frames(8)
+			await create_timer(0.5).timeout
+			check(current_scene.has_node("GameController") and session.username == "Hero", "RESTART: a new match with the same username")
+			check(session.records.size() == seed_count + 1 and hero_entries(session).size() == 1, "RESTART created no entry")
+			var core: Node = current_scene.get_node("GameController")
+			check(core.get_state() != 3 and core.get_state() != 4 and core.get_sun_spent() == 0, "the whole gameplay state is fresh (no result, nothing spent)")
+	# BACK: the player's session ends, the name stays taken
+	var back: Control = current_scene.find_child("Back", true, false)
+	await click(back)
+	await click(back)
+	await frames(8)
+	check(current_scene.name == "MainMenu", "BACK returns to the main menu")
+	check(session.username == "" and session.records.size() == seed_count + 1, "the session ended; the entry stays on the board")
+	var menu := current_scene
+	await type_text(menu.name_edit, "Hero")
+	await click(menu.tick_button)
+	check(menu.status_label.text == "Username already exists" and not session.username_accepted, "the old username is rejected: Username already exists")
+	await click(menu.play_button)
+	check(current_scene == menu, "no new game can start with the old username")
+	await type_text(menu.name_edit, " hERO ")
+	await click(menu.tick_button)
+	check(menu.status_label.text == "Username already exists", "also rejected case-insensitively")
+	await shot("old_name_rejected")
+	await type_text(menu.name_edit, "Hero2")
+	await click(menu.tick_button)
+	check(session.username_accepted and session.username == "Hero2", "a different username is accepted")
+	await click(menu.play_button)
+	await create_timer(1.2).timeout
+	await frames(8)
+	check(current_scene.has_node("GameController") and session.records.size() == seed_count + 1, "the new player starts a new game; no entry yet")
 	print("RECORDS " + JSON.stringify(session.sorted_records()))
-	await shot("final_board")
 	check(disk_untouched(), "nothing was written to disk")
 	finish()
 

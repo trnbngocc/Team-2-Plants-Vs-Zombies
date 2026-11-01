@@ -66,7 +66,7 @@ const SHOVEL_HELD_TIP := Vector2(0.06, 0.94)     # blade tip inside the picture 
 
 # Start Text ("Ready... Set... PLANT!"): cắt ba dòng từ Start_Text.png (bỏ dòng chú thích trên cùng)
 const START_TEXT_TEXTURE := "res://assets/ui/Start_Text.png"
-const START_TEXT_REGIONS := [Rect2(8, 22, 296, 88), Rect2(70, 118, 175, 90), Rect2(4, 214, 302, 124)]
+const START_TEXT_REGIONS := [Rect2(8, 22, 296, 104), Rect2(70, 126, 175, 82), Rect2(4, 214, 302, 124)]
 const START_STEP := 0.75          # giây giữa hai dòng
 const START_END_HOLD := 0.8       # giữ dòng cuối trước khi bắt đầu wave
 const START_SAFETY_SECONDS := 4.5 # dù animation / âm thanh lỗi, wave vẫn bắt đầu
@@ -707,7 +707,8 @@ func _on_mower_activated(row: int) -> void:
 
 
 # Core xác nhận Squash vừa hạ cánh: chỉ rung màn hình khi đập trúng Zombie (âm thanh đã phát lúc Zombie tới gần).
-func _on_squash_smashed(_row: int, _column: float, hit_count: int) -> void:
+func _on_squash_smashed(row: int, column: float, hit_count: int) -> void:
+	_note_death_event("squash", row, column)
 	if hit_count > 0:
 		_shake()
 
@@ -732,6 +733,7 @@ func _shake() -> void:
 
 # Jalapeno vừa nổ (sau ngòi 2 giây của Core): âm thanh + lửa chạy ngang cả hàng.
 func _on_jalapeno_exploded(row: int, column: int) -> void:
+	_note_death_event("burn", row, float(column))
 	Audio.play_sfx("jalapeno")
 	var fire := JalapenoFire.new()
 	var feet := _zombie_feet(row, 0.5)
@@ -1012,6 +1014,51 @@ func _start_imp_flight(imp_view: ZombieView, info: Dictionary) -> void:
 			return
 
 
+# ---- why did a zombie die? (only to pick the death animation; the core is never asked to change) ----
+# The core reports a Jalapeno blast and a Squash smash as signals, in the same update that removes the zombies they kill,
+# and Lawn Mower runs are in get_mowers_data(). So a death is "burn" / "squash" when such an event happened a moment ago in
+# the zombie's row (Squash: within its smash radius of the landing column), "mower" when a running mower's hit window
+# covers the zombie's last column, and an ordinary kill (a pea) otherwise: Peashooter is the only other thing that kills.
+# A mix-up between two kills in the very same instant only changes which animation plays.
+const DEATH_EVENT_FRAMES := 4
+const SQUASH_RADIUS := 0.8          # Squash::SMASH_RADIUS in src/squash.hpp
+const MOWER_HIT_BEHIND := 1.0       # LawnMower::HIT_BEHIND / HIT_AHEAD in src/lawn_mower.hpp
+const MOWER_HIT_AHEAD := 0.8
+const MOWER_MARGIN := 0.35          # the mower covers ~0.12 column per frame; the zombie's column is one frame old
+var _death_events: Array = []       # {"type", "row", "col", "frame"}
+var _mower_prev := {}               # row -> {"col", "state"} as of the previous frame
+
+
+func _note_death_event(type: String, row: int, col: float) -> void:
+	var f := Engine.get_process_frames()
+	_death_events = _death_events.filter(func(e): return f - int(e["frame"]) <= DEATH_EVENT_FRAMES * 3)
+	_death_events.append({"type": type, "row": row, "col": col, "frame": f})
+
+
+func _death_cause(v: ZombieView) -> String:
+	if v.kind == 1:
+		return ""                    # the Gargantuar keeps its heavy fall whatever killed it (PuppetZombie ignores the cause)
+	var f := Engine.get_process_frames()
+	for e in _death_events:
+		if f - int(e["frame"]) > DEATH_EVENT_FRAMES or int(e["row"]) != v.last_row:
+			continue
+		if e["type"] == "burn":
+			return "burn"
+		if e["type"] == "squash" and absf(v.last_col - float(e["col"])) <= SQUASH_RADIUS + 0.35:
+			return "squash"
+	var now := {}
+	for m in _as_list(_core("get_mowers_data")):
+		if m is Dictionary:
+			now[int(m.get("row", -1))] = {"col": float(m.get("column", 0)), "state": int(m.get("state", 0))}
+	for src in [_mower_prev, now]:
+		var m = src.get(v.last_row)
+		if m != null and int(m["state"]) == 1 \
+				and v.last_col >= float(m["col"]) - MOWER_HIT_BEHIND - MOWER_MARGIN \
+				and v.last_col <= float(m["col"]) + MOWER_HIT_AHEAD + MOWER_MARGIN:
+			return "mower"
+	return ""
+
+
 func _sync_zombies() -> void:
 	var list := _as_list(_core("get_zombies_data"))
 	_debug_dump("get_zombies_data", list)
@@ -1059,7 +1106,7 @@ func _sync_zombies() -> void:
 			var dead: ZombieView = zombie_views[id]
 			zombie_views.erase(id)
 			if is_instance_valid(dead):
-				dead.die()
+				dead.die(_death_cause(dead))
 
 
 # Mỗi hàng một máy cắt cỏ: nằm chờ ở mép trái, lao qua hàng khi được kích hoạt, rồi biến mất (đã dùng).
@@ -1085,6 +1132,10 @@ func _sync_mowers() -> void:
 		v.position = _cell_center(float(row), col) + MOWER_DRAW_OFFSET
 		(v.get_node("WheelB") as Node2D).rotation = col * MOWER_WHEEL_SPIN
 		(v.get_node("WheelF") as Node2D).rotation = col * MOWER_WHEEL_SPIN
+	_mower_prev.clear()
+	for d in list:
+		if d is Dictionary:
+			_mower_prev[int(d.get("row", -1))] = {"col": float(d.get("column", 0)), "state": int(d.get("state", 0))}
 
 
 func _make_mower_view() -> Node2D:
