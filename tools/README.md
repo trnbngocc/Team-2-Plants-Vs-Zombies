@@ -86,3 +86,10 @@ OGG copies.
 
 The "Starts at" offsets skip leading silence when the clip is played; the files
 themselves are not trimmed. `choose_plant.m4a` is not used, as requested.
+
+## Wall-nut (hand-edited)
+
+`assets/plants/wall-nut/wallnut_1.png` and its copy `assets/characters/icons/wallnut.png` were cleaned by hand
+(the thin blue frame removed) and placed back on the original 102 x 101 canvas, with the nut at offset (2, 1) so that
+every nut pixel keeps its place (the blink eyes in `plant_rig.gd` are positioned in these pixels). Re-running
+`plant_art/build_assets.py` or `character_art/imp_icons.py` would overwrite them with the framed version.

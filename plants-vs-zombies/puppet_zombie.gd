@@ -68,6 +68,7 @@ var _ground: Node2D                # origin = the point between the feet on the 
 var _upper: Node2D                 # everything above the hips
 var _feet: Node2D
 var _head: Node2D                  # head joint (pivot at the neck)
+var _head_sprite: Sprite2D         # the head picture (copied onto the flying head when it is knocked off)
 var _pole: Node2D                  # Gargantuar pole joint (pivot at the grip)
 var _rider: Node2D                 # Imp riding the Gargantuar
 var _arm_l: Node2D                 # Imp arms (front / back)
@@ -170,7 +171,7 @@ func _build_zombie() -> void:
 	_sprite(_upper, "zombie/body.png", Z_PARTS["body"], Z_HIPS, 0)
 
 	_head = _joint(_upper, Z_NECK, Z_HIPS, 2)
-	_sprite(_head, "zombie/head.png", Z_PARTS["head"], Z_NECK, 0)
+	_head_sprite = _sprite(_head, "zombie/head.png", Z_PARTS["head"], Z_NECK, 0)
 	_armor_sprite = Sprite2D.new()
 	_armor_sprite.centered = false
 	_armor_sprite.z_index = 1
@@ -302,6 +303,7 @@ func _build_imp() -> void:
 	head.centered = false
 	head.position = Vector2(-36, -58)       # chin overlaps the shirt collar
 	_head.add_child(head)
+	_head_sprite = head
 
 	_arm_l = _joint(_upper, IMP_SHOULDER_FRONT, IMP_WAIST, 3)
 	_sprite(_arm_l, "imp/arm.png", Vector2(-5.5, 0), Vector2.ZERO, 0)
@@ -329,12 +331,17 @@ func set_paused(paused: bool) -> void:
 
 
 ## Play the death motion once, then emit death_finished.
-func die() -> void:
+## cause: "" ordinary damage (the head is knocked off), "mower" (a stronger throw to the right), "burn" (Jalapeno) and
+## "squash" keep the plain slump. The Gargantuar never loses its head. Everything is a scripted tween, display only.
+func die(cause := "") -> void:
 	if _dying:
 		return
 	_dying = true
 	anim = "death"
 	_t = 0.0
+	if kind != KIND_GARGANTUAR and (cause == "" or cause == "mower") and _head != null and _head_sprite != null:
+		_die_head_off(cause == "mower")
+		return
 	if _armor_sprite:
 		_armor_sprite.visible = false
 	var tw := create_tween()
@@ -356,6 +363,85 @@ func die() -> void:
 			tw.tween_interval(0.25)
 			tw.tween_property(self, "modulate:a", 0.0, 0.5)
 	tw.tween_callback(func(): death_finished.emit())
+
+
+# ---- death with the head knocked off (ordinary kills and Lawn Mower kills) ----
+# Lawn-pixel figures for a regular zombie (the Imp uses IMP_POP_SCALE of them). All motion is a fixed tween.
+const POP_PEAK := 90.0            # how high the head rises above where it was
+const POP_SIDE := 44.0            # distance it travels forward (the direction the body falls)
+const POP_SIDE_MOWER := 150.0     # ... when a Lawn Mower hit it: thrown in the mower's direction (to the right)
+const POP_FLIGHT := 0.5           # seconds in the air
+const POP_FLIGHT_MOWER := 0.55
+const POP_HOP := 0.2              # one bounce
+const POP_FADE := 0.3
+const IMP_POP_SCALE := 0.55
+
+
+func _die_head_off(strong: bool) -> void:
+	var gs := absf(global_scale.x)                 # rig pixels -> lawn pixels
+	var k := IMP_POP_SCALE if kind == KIND_IMP else 1.0
+	var dir := 1.0 if strong else -1.0             # forward = left, a mower throws it to the right
+
+	# the flying head: a copy of the head picture (and of the helmet that is still on it) on a top-level node
+	var fly := Node2D.new()
+	fly.name = "FlyingHead"
+	fly.top_level = true
+	fly.z_as_relative = false
+	fly.z_index = 14
+	var hs := Sprite2D.new()
+	hs.texture = _head_sprite.texture
+	hs.centered = false
+	hs.position = _head_sprite.position
+	fly.add_child(hs)
+	if _armor_sprite != null and _armor_sprite.visible and _armor_sprite.texture != null:
+		var hat := Sprite2D.new()                  # an intact cone / bucket stays on the head: no second helmet drop
+		hat.texture = _armor_sprite.texture
+		hat.centered = false
+		hat.scale = _armor_sprite.scale
+		hat.position = _armor_sprite.position
+		hat.z_index = 1
+		fly.add_child(hat)
+	add_child(fly)
+	fly.global_transform = _head.global_transform
+	_head.visible = false                          # the neck is empty now (this hides the helmet on the body too)
+	if _armor_sprite:
+		_armor_sprite.visible = false
+
+	var start := fly.global_position
+	var ground_y := _ground.global_position.y - 4.0 * gs
+	var fall := maxf(ground_y - start.y, 12.0 * gs)
+	var peak := (115.0 if strong else POP_PEAK) * k              # lawn pixels = the units of global_position
+	var side := (POP_SIDE_MOWER if strong else POP_SIDE) * k * dir
+	var t1 := POP_FLIGHT_MOWER if strong else POP_FLIGHT
+	var spin := dir * (8.0 if strong else 5.0)
+	var rot0 := fly.rotation
+	var land := Vector2(start.x + side, start.y + fall)
+	var hop := 18.0 * k
+	var drift := 14.0 * k * dir
+
+	var ht := fly.create_tween()
+	ht.tween_method(func(u: float):
+		fly.global_position = Vector2(start.x + side * u, start.y + fall * u - peak * 4.0 * u * (1.0 - u))
+		fly.rotation = rot0 + spin * u, 0.0, 1.0, t1)
+	ht.tween_method(func(u: float):
+		fly.global_position = Vector2(land.x + drift * u, land.y - hop * 4.0 * u * (1.0 - u))
+		fly.rotation = rot0 + spin + dir * 0.7 * u, 0.0, 1.0, POP_HOP)
+	ht.tween_interval(0.05)
+	ht.tween_property(fly, "modulate:a", 0.0, POP_FADE)
+	ht.tween_callback(fly.queue_free)
+
+	# the headless body: a short stagger, then it falls (backwards from a mower), then fades; `_ground` carries the fade
+	var bt := create_tween()
+	var lean := 0.12 if not strong else -0.1
+	var fall_rot := 1.3 if strong else -1.42
+	var slump := 0.55 if kind != KIND_IMP else 0.4
+	bt.tween_property(_ground, "rotation", lean, 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	if strong:
+		bt.parallel().tween_property(_ground, "position:x", _ground.position.x + 40.0 / maxf(gs, 0.001), 0.16)
+	bt.tween_property(_ground, "rotation", fall_rot, slump).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	bt.tween_interval(0.1)
+	bt.tween_property(_ground, "modulate:a", 0.0, POP_FADE)
+	bt.tween_callback(func(): death_finished.emit())
 
 
 func _process(delta: float) -> void:

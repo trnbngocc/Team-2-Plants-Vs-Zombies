@@ -28,6 +28,8 @@ var kind := -1
 var armor := -1
 var eating := false
 var dying := false
+var last_row := -1          # last data seen from the core (used to explain a death: see main_game._death_cause)
+var last_col := -1.0
 var _action := 0
 var _last_hp := -1
 var _game_state := STATE_PLAYING
@@ -93,6 +95,8 @@ func apply_data(d: Dictionary) -> void:
 	if dying:
 		return
 	_ensure_puppet(clampi(int(d.get("kind", 0)), 0, 2))
+	last_row = int(d.get("row", last_row))
+	last_col = float(d.get("column", last_col))
 	_action = int(d.get("action", 0))
 
 	var a := clampi(int(d.get("armor", 0)), 0, 2)
@@ -129,7 +133,8 @@ func set_game_state(state: int) -> void:
 
 
 ## Core removed the zombie (it died): play the death motion, then free this view.
-func die() -> void:
+## cause: "" ordinary damage, "mower", "burn" (Jalapeno), "squash" - see PuppetZombie.die().
+func die(cause := "") -> void:
 	if dying:
 		return
 	dying = true
@@ -141,7 +146,7 @@ func die() -> void:
 		Audio.play_sfx("gargantuar_death")
 	puppet.set_paused(false)
 	puppet.death_finished.connect(queue_free)
-	puppet.die()
+	puppet.die(cause)
 
 
 func current_animation() -> String:

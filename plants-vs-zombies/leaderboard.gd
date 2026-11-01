@@ -5,11 +5,15 @@ extends Control
 ## every Victory above every Defeat, lower Sun spent first among Victories.
 ## Opening or leaving this screen only READS the records (the match result was added once when the match ended).
 ##
-## One screen, one button, two entry modes (Session.view_mode): BACK returns to the main menu and saves nothing.
-##   VIEW_MENU        opened from the main menu
-##   VIEW_POST_MATCH  opened by NEXT after a finished match - the newest result is highlighted
+## One screen, two entry modes (Session.view_mode):
+##   VIEW_MENU        opened from the main menu: BACK only (returns to the menu)
+##   VIEW_POST_MATCH  opened by NEXT after a finished match, the player's row highlighted:
+##                    RESTART replays with the same username (the same entry is updated),
+##                    BACK ends the player's session (Session.end_session) and returns to the menu.
+## Neither button creates a record; the entry was created / updated when the match ended.
 
 const MENU_SCENE := "res://scenes/menu.tscn"
+const GAME_SCENE := "res://scenes/main.tscn"
 const BG := "res://assets/ui/menu_background.jpg"
 
 const COL_RANK := 56.0
@@ -91,7 +95,7 @@ func _build() -> void:
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty.add_theme_color_override("font_color", Color("2b3c4c"))
 		rows.add_child(empty)
-	var newest: int = int(Session.records[-1]["id"]) if post_match and not Session.records.is_empty() else -1
+	var newest: int = Session.last_id if post_match else -1
 	for i in data.size():
 		var r: Dictionary = data[i]
 		var is_mine: bool = int(r.get("id", -2)) == newest
@@ -105,12 +109,18 @@ func _build() -> void:
 	buttons.add_theme_constant_override("separation", 24)
 	box.add_child(buttons)
 
-	# BACK is the only navigation, in both modes: it returns to the main menu and never saves anything.
+	_buttons = []
+	if post_match:
+		var restart := StoneUI.make_image_button("restart", Vector2(96, 80))
+		restart.name = "Restart"
+		restart.pressed.connect(_on_restart)
+		buttons.add_child(restart)
+		_buttons.append(restart)
 	var back := StoneUI.make_image_button("back", Vector2(184, 80))
 	back.name = "Back"
 	back.pressed.connect(_on_back)
 	buttons.add_child(back)
-	_buttons = [back]
+	_buttons.append(back)
 
 
 func _row(cells: Array, header: bool, mine: bool, won := false) -> Control:
@@ -154,9 +164,18 @@ func _lock() -> bool:
 	return true
 
 
-# BACK (menu view and post-match view alike): navigation only. Pending results stay in Session, nothing is saved.
+# RESTART (post-match only): the same player replays from scratch with the same username.
+func _on_restart() -> void:
+	if not _lock():
+		return
+	Session.restart_match()
+	Audio.play_music("gameplay")     # starts with the 30 s preparation phase, like a first game
+	get_tree().change_scene_to_file(GAME_SCENE)
+
+
+# BACK (both views): return to the main menu. After a match this ends the player's session; their name stays taken.
 func _on_back() -> void:
 	if not _lock():
 		return
-	Session.view_mode = Session.VIEW_NONE
+	Session.end_session()
 	get_tree().change_scene_to_file(MENU_SCENE)

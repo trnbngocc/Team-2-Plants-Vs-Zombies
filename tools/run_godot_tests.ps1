@@ -32,5 +32,6 @@ RunTest 'projectile_test' $true 300
 RunTest 'throw_capture' $true 300
 RunTest 'plants_capture' $true 300
 RunTest 'audio_test' $true 300
+RunTest 'death_test' $true 560
 if ($bad -gt 0) { Write-Host "$bad test(s) failed" -ForegroundColor Red; exit 1 }
 Write-Host "all tests passed"

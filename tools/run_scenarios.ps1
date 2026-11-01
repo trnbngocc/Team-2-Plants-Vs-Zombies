@@ -46,19 +46,24 @@ $r = Run 'username' 180
 Check (Passed $r 'username') 'all in-game checks passed'
 Check (-not (ScriptFails $r)) 'no script errors'
 
-Write-Host "== D: Victory -> NEXT -> leaderboard -> BACK"
+Write-Host "== D: Victory -> NEXT -> leaderboard -> BACK; old name rejected, new name accepted"
 $r = Run 'match_victory' 600
 Check (Passed $r 'match_victory') 'all in-game checks passed'
 Check (-not (ScriptFails $r)) 'no script errors'
 
-Write-Host "== E: Game Over -> NEXT -> leaderboard -> BACK"
+Write-Host "== E: Game Over -> NEXT -> leaderboard -> BACK; old name rejected, new name accepted"
 $r = Run 'match_defeat' 300
 Check (Passed $r 'match_defeat') 'all in-game checks passed'
 Check (-not (ScriptFails $r)) 'no script errors'
 
-Write-Host "== F: two matches with the same name, both results kept"
+Write-Host "== F: Game Over, RESTART, Victory: same entry updated; BACK; old name rejected"
 $r = Run 'match_two' 900
 Check (Passed $r 'match_two') 'all in-game checks passed'
+Check (-not (ScriptFails $r)) 'no script errors'
+
+Write-Host "== F2: Victory, RESTART, Game Over: the entry now holds the Defeat"
+$r = Run 'match_two_rev' 1200
+Check (Passed $r 'match_two_rev') 'all in-game checks passed'
 Check (-not (ScriptFails $r)) 'no script errors'
 
 Write-Host "== G: finished match, NEXT, BACK, menu leaderboard, menu Quit"
