@@ -6,6 +6,8 @@ A lane-defence game inspired by *Plants vs. Zombies*, built as a university team
 
 > This is a student learning project. It is **not** an official PopCap / Electronic Arts product and is not affiliated with them.
 
+> **Lecturer quick start:** extract the ZIP, open `plants-vs-zombies/project.godot` with Godot 4.7.x and press F5 (details in [G. How to run](#g-how-to-run)). The compiled Windows DLL is included, so nothing has to be built. Asset licences are unverified: see [I](#i-asset-sources-and-credits).
+
 ---
 
 ## English
@@ -134,7 +136,7 @@ src/                       C++ game core (*.cpp / *.hpp)
   wave_manager.*           preparation timer, waves, spawning
   game_controller.*        the Godot node that owns and updates everything; signals to the UI
   pvz_library_init.cpp     registers GameController with Godot
-test/                      stand-alone C++ unit tests
+test/                      stand-alone C++ unit tests (see test/README.md)
   wave_manager_test.cpp, squash_test.cpp, jalapeno_test.cpp, zombie_movement_test.cpp, zombie_visual_state_test.cpp
   stubs/game_controller.hpp   stub of the Godot-dependent controller
 plants-vs-zombies/         the Godot project
@@ -162,6 +164,7 @@ tools/                     scripts that produced the processed assets, and test 
   run_core_tests.sh        builds + runs the C++ unit tests (g++)
   run_godot_tests.ps1      runs every Godot test
   run_scenarios.ps1        runs the user-flow scenarios, each in its own process
+  make_submission_zip.py   builds the submission ZIP (what is included / left out is documented in the script)
 build/                     (generated) local C++ test build output; not packaged
 ```
 
@@ -174,7 +177,8 @@ These match the project configuration; other setups have not been tested.
 - **To build the C++ library:**
   - Git, to fetch the `extern/godot-cpp` submodule;
   - Python 3 with **SCons**;
-  - a C++17 compiler (the team used MSVC from Visual Studio Build Tools).
+  - a C++17 compiler on the PATH of the terminal that runs SCons (the team used MSVC from Visual Studio Build Tools, e.g. a "Developer Command Prompt").
+  - `extern/godot-cpp` must be the commit pinned by the repository (`507ed9d`); the ZIP already contains exactly that source.
 - **Optional, to run the unit tests:** any C++17 compiler, e.g. g++.
 
 ### G. How to run
@@ -240,7 +244,7 @@ All game assets live under `plants-vs-zombies/assets/` (two small source images,
 | Reference material | `assets/references/original_pvz/` | HD reference illustrations of the characters (`*.webp`, `zombie_pose.jpg`, `squash_move.gif`) and a full lawn-with-mowers picture. They are the **sources** for the cut-out characters and the visual targets used to size the mowers; they are not loaded by the game |
 | Legacy / unused | see below | Older or alternative files that remain in the working repository but are not loaded by the game |
 
-Not loaded by the game and **not packaged in the submission ZIP** (still in the working repository): the older generated zombie sheets in `assets/zombies/`, `assets/lawn/lawn_game.jpg`, `assets/env/lawn_mower/lawn_mower.png`, loose pictures directly in `assets/` (`168191.png`, `chilli.png`, `pea.png`, `sunflower (1).png`, `wallnut (1).png`), and the audio files `brainzzz.mp3`, `choose_plant.m4a`, `zombie_falling_1.ogg`.
+Not loaded by the game and **not packaged in the submission ZIP** (still in the working repository): the older generated zombie sheets in `assets/zombies/`, `assets/lawn/lawn_game.jpg`, `assets/env/lawn_mower/lawn_mower.png`, loose pictures directly in `assets/` (`168191.png`, `chilli.png`, `pea.png`, `sunflower (1).png`, `wallnut (1).png`), the audio files `brainzzz.mp3`, `choose_plant.m4a`, `zombie_falling_1.ogg`, and `assets/references/start_text_preview/` (review exports of the Start Text crops).
 
 ### I. Asset sources and credits
 
@@ -276,7 +280,7 @@ If you can identify the original source and licence of an asset above, replace i
 | `tests/behaviour_capture.gd`, `final_wave_sequence_test.gd`, `projectile_test.gd`, `throw_capture.gd`, `plants_capture.gd` (windowed) | screen shake, shovel, pause, boss; final-wave announcement order; pea sprite and impact only on real hits; Gargantuar throwing the Imp; plant animations | 31 / 13 / 10 / 3 / 4 checks, 0 failures |
 | `tests/audio_test.gd` (windowed) | Lawn Mower and Squash sound start / stop / no duplicates / pause; Squash silent when planted and for other rows | 24 / 0 |
 | `tests/death_test.gd` (windowed) | head-off death for Regular / Conehead / Buckethead / Imp, helmet handling, stronger Lawn Mower throw, Jalapeno / Squash / Gargantuar keep the plain fall, pause, clean-up, no Victory delay | 38 / 0 |
-| `tools/run_scenarios.ps1` | real mouse and key events through the menus in separate processes: Quit, leaderboard and Back, Tick vs keyboard Enter vs Play, Victory / Game Over -> Next -> Back, two matches, empty after relaunch | 16 checks, 0 failures |
+| `tools/run_scenarios.ps1` | real mouse and key events through the menus in separate processes: Quit, leaderboard and Back, Tick vs keyboard Enter vs Play, Victory / Game Over -> Next -> Back, two matches, empty after relaunch | 18 checks, 0 failures |
 
 The suites were last run together on the developer's Windows machine against the Godot 4.7.2-stable editor and the debug DLL. The screenshots they save are for human inspection.
 

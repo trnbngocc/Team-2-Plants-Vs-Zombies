@@ -1,3 +1,8 @@
+// These tests rely on assert(): refuse to build them with NDEBUG, which would silently turn every check off.
+#ifdef NDEBUG
+#error "build the unit tests without NDEBUG (tools/run_core_tests.sh does)"
+#endif
+
 #include <cassert>
 #include <iostream>
 

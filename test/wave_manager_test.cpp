@@ -1,11 +1,17 @@
+// These tests rely on assert(): refuse to build them with NDEBUG, which would silently turn every check off.
+#ifdef NDEBUG
+#error "build the unit tests without NDEBUG (tools/run_core_tests.sh does)"
+#endif
+
 #include <cassert>
 #include <cmath>
 #include <iostream>
 #include <set>
 #include <vector>
 
-// Resolves to test/stubs/game_controller.hpp (see build note there).
-#include "game_controller.hpp"
+// The stub (test/stubs/game_controller.hpp), named explicitly so editors / IntelliSense do not pick the
+// real Godot-based src/game_controller.hpp.
+#include "stubs/game_controller.hpp"
 #include "wave_manager.hpp"
 #include "gargantuar.hpp"
 #include "imp.hpp"

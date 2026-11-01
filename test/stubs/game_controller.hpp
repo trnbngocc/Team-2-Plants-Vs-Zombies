@@ -1,18 +1,15 @@
 #pragma once
 
-// Stub GameController for testing WaveManager / Gargantuar outside Godot.
+// Stub GameController for the C++ unit tests, so they run without Godot.
 //
-// The real GameController derives from godot::Node, so it cannot be created
-// without the engine. This stub only records the Zombies that get spawned and
-// the presentation events they raise.
+// The real GameController derives from godot::Node and cannot exist without the engine. This stub implements only what
+// the game classes call (add_zombie, get_zombies_in_row, notify_*) and RECORDS the presentation events they raise
+// (jalapeno_events, squash_smash_events, squash_alert_events, imp_throw_events ...) so tests can assert on them.
 //
-// src/wave_manager.cpp and src/gargantuar.cpp include "game_controller.hpp" with
-// quotes, so the compiler always looks in src/ first. Therefore copy those
-// files to a build directory and compile the copies:
-//     cp src/wave_manager.cpp src/gargantuar.cpp build/
-//     g++ -std=c++17 -iquote test/stubs -I src
-//         test/wave_manager_test.cpp build/wave_manager.cpp build/gargantuar.cpp
-//         src/imp.cpp src/zombie.cpp src/entity.cpp src/grid.cpp
+// Who sees it: the tests include it as "stubs/game_controller.hpp". The game sources that include
+// "game_controller.hpp" (wave_manager.cpp, gargantuar.cpp, squash.cpp, jalapeno.cpp) would find the REAL one in src/
+// first, so tools/run_core_tests.sh compiles copies of them with `-iquote test/stubs`.
+// Build and run everything with:  bash tools/run_core_tests.sh   (see test/README.md)
 
 #include <memory>
 #include <vector>

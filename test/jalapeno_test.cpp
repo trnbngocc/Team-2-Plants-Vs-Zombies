@@ -1,17 +1,19 @@
+// These tests rely on assert(): refuse to build them with NDEBUG, which would silently turn every check off.
+#ifdef NDEBUG
+#error "build the unit tests without NDEBUG (tools/run_core_tests.sh does)"
+#endif
+
 #include <cassert>
 #include <iostream>
 #include <memory>
 
-// Resolves to test/stubs/game_controller.hpp (see build note there).
-#include "game_controller.hpp"
+// The stub (test/stubs/game_controller.hpp), named explicitly so editors / IntelliSense do not pick the
+// real Godot-based src/game_controller.hpp.
+#include "stubs/game_controller.hpp"
 #include "jalapeno.hpp"
 #include "gargantuar.hpp"
 
-// Build (copy the .cpp files that include "game_controller.hpp" first):
-//     cp src/jalapeno.cpp src/gargantuar.cpp build/
-//     g++ -std=c++17 -iquote test/stubs -I src test/jalapeno_test.cpp
-//         build/jalapeno.cpp build/gargantuar.cpp src/imp.cpp
-//         src/zombie.cpp src/entity.cpp src/grid.cpp src/plant.cpp
+// Build and run: bash tools/run_core_tests.sh   (see test/README.md)
 
 namespace {
 constexpr double STEP = 1.0 / 60.0;
