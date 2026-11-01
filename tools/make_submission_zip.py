@@ -34,7 +34,7 @@ EXCLUDE_ASSETS = {
     f"{GAME}/assets/audio/choose_plant.m4a",
     f"{GAME}/assets/audio/zombie_falling_1.ogg",
 }
-EXCLUDE_DIRS = {f"{GAME}/assets/zombies"}      # older generated zombie sheets (nothing loads them)
+EXCLUDE_DIRS = {f"{GAME}/assets/zombies", f"{GAME}/assets/references/start_text_preview"}      # older generated zombie sheets (nothing loads them)
 
 
 def skipped(rel):
@@ -67,6 +67,7 @@ def main(out):
         sys.exit("missing " + dll + " - run scons first")
     if dll not in files:
         files.append(dll)
+    os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for rel in sorted(files):
             z.write(os.path.join(REPO, rel), f"{ROOT_NAME}/{rel}")
@@ -74,4 +75,4 @@ def main(out):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else os.path.join(REPO, "..", ROOT_NAME + "_submission.zip"))
+    main(sys.argv[1] if len(sys.argv) > 1 else os.path.normpath(os.path.join(REPO, "..", "PVZ_Submission", ROOT_NAME + "_Submission.zip")))
