@@ -332,16 +332,25 @@ This repository is an educational, non-commercial student project. If you have a
 
 ## Tiếng Việt
 
-> **Lưu ý:** phần tiếng Anh ở trên là bản cập nhật đầy đủ và chính xác nhất (tổng quan, cấu trúc, phân loại asset, nguồn/credits, kiểm thử và hạn chế). Phần tiếng Việt dưới đây là bản gốc, một số chi tiết về menu / leaderboard đã cũ: hiện nay username được xác nhận bằng nút **Tick** trên màn hình (phím Enter không có tác dụng), nút **Play** bắt đầu ván chơi, màn Leaderboard chỉ có nút **Back**, và leaderboard chỉ tồn tại trong phiên chạy (không lưu ra đĩa).
+### A. Tổng quan dự án
 
-### A. Giới thiệu dự án
-
-- **Tên:** Team-2-Plants-vs-Zombies
-- **Giới thiệu:** một trò chơi nhỏ theo phong cách *Plants vs. Zombies*. Người chơi trồng cây trên bãi cỏ 5 × 9, thu thập Sun và ngăn ba đợt zombie tiến vào nhà.
-- **Mục đích:** luyện tập thiết kế hướng đối tượng và làm việc nhóm trên một chương trình chơi được thật. Toàn bộ luật chơi nằm trong lõi C++. Phần Godot chỉ hiển thị trạng thái đó và chuyển thao tác của người chơi cho lõi xử lý.
-- **Bối cảnh:** đồ án môn học theo nhóm ở bậc đại học.
-
-> Đây là dự án học tập của sinh viên, **không** phải sản phẩm chính thức của PopCap / Electronic Arts và không liên kết với họ.
+- **Tên:** Team-2-Plants-Vs-Zombies (tên dự án Godot là `PlantsVsZombies`).
+- **Mô tả ngắn:** trò chơi phòng thủ theo hàng kiểu *Plants vs. Zombies*. Bạn trồng cây phòng thủ trên bãi cỏ 9 × 5, thu thập Sun và ngăn bốn đợt zombie (tổng 25 kẻ địch, gồm boss Gargantuar biết ném Imp) tiến vào nhà. Mỗi hàng có một Máy cắt cỏ là tuyến phòng thủ cuối cùng.
+- **Mục đích / bối cảnh:** đồ án môn học theo nhóm ở bậc đại học, nhằm luyện tập thiết kế hướng đối tượng và làm việc nhóm trên một chương trình chơi được thật. Toàn bộ luật chơi nằm trong lõi C++; phía Godot chỉ hiển thị trạng thái đó và gửi thao tác của người chơi cho lõi.
+- **Các tính năng gameplay chính:**
+  - năm loại cây: Sunflower, Peashooter, Wall-nut, Jalapeno, Squash, chọn từ Seed Bank, cùng một cái xẻng;
+  - zombie Thường, Conehead và Buckethead, boss Gargantuar và Imp do nó ném;
+  - kinh tế Sun (Sun rơi từ trên xuống, Sunflower tạo Sun), 30 giây chuẩn bị, chữ "Ready, Set, Plant!" khi bắt đầu, thông báo huge wave và final wave;
+  - một Máy cắt cỏ mỗi hàng (dùng một lần), pause, màn Victory và Game Over;
+  - hoạt ảnh zombie chết: zombie Thường / Conehead / Buckethead / Imp bị mất đầu khi chịu sát thương thông thường (Máy cắt cỏ hất đầu bay xa hơn về bên phải); zombie bị Jalapeno hoặc Squash hạ và Gargantuar chỉ ngã bình thường;
+  - nhập username (xác nhận bằng nút Tick trên màn hình): một username = một mục leaderboard = một phiên người chơi, và leaderboard chỉ tồn tại trong phiên chạy;
+  - nhạc và hiệu ứng âm thanh, gồm tiếng Máy cắt cỏ và âm báo của Squash.
+- **Công nghệ và công cụ:**
+  - lõi game **C++17**, build thành **Godot GDExtension** bằng **godot-cpp** (`extern/godot-cpp`, một git submodule) và **SCons**;
+  - **Godot 4.7** (phát triển với 4.7.2-stable, renderer GL Compatibility) cùng **GDScript** cho hiển thị, giao diện và âm thanh;
+  - **Python 3** (Pillow, NumPy, SciPy, OpenCV) trong `tools/` để cắt và xử lý hình ảnh; MATLAB được dùng một lần để chuyển đổi hai bản nhạc (xem `tools/README.md`);
+  - **g++** cho các unit test C++ độc lập.
+- **Cách build và chạy:** xem [F. Yêu cầu](#f-yêu-cầu) và [G. Hướng dẫn chạy](#g-hướng-dẫn-chạy). File ZIP nộp bài đã chứa sẵn thư viện Windows đã biên dịch, nên có thể mở game trong Godot mà không cần build.
 
 ### B. Mục tiêu học tập
 
@@ -353,33 +362,34 @@ Các khái niệm có thể học trong mã nguồn (đều được dùng thậ
 | Kế thừa | `Plant`, `Zombie` và `Bullet` kế thừa `Entity`; `Peashooter`, `Sunflower`, `WallNut`, `Jalapeno` kế thừa `Plant` |
 | Đa hình | hàm ảo `Entity::update()`, `Entity::get_type()`, `Entity::receive_damage()` (giáp của zombie ghi đè hàm này), `Plant::act()` |
 | Đóng gói | các hằng số cân bằng là thành viên `static constexpr` private của từng lớp |
-| Quản lý sở hữu và bộ nhớ | `GameController` sở hữu mọi thực thể trong `std::vector<std::unique_ptr<Entity>>`; thực thể sinh ra khi đang duyệt được hoãn lại (`pending_entities`) |
+| Sở hữu và bộ nhớ | `GameController` sở hữu mọi thực thể trong `std::vector<std::unique_ptr<Entity>>`; thực thể sinh ra khi đang duyệt được hoãn lại (`pending_entities`) |
 | Vòng lặp game và máy trạng thái | `GameController::_process()` → `update_entities()`; các trạng thái SETUP / PLAYING / PAUSED / VICTORY / DEFEAT |
 | Va chạm và chiến đấu | `GameController::resolve_bullet_collisions()`; giáp hấp thụ sát thương trong `Zombie::receive_damage()`; hiệu ứng trạng thái trong `Entity` |
-| Cấu trúc dữ liệu | `Grid` (mảng cố định 5 × 9), vector thực thể, danh sách Sun rơi, bảng cấu hình wave |
+| Cấu trúc dữ liệu | `Grid` (mảng cố định 5 × 9), các vector thực thể, danh sách Sun rơi, bảng cấu hình wave |
 | Sự kiện và giao diện | signal của Godot do lõi phát ra (`plant_placed`, `placement_rejected`, `projectile_fired`, `projectile_hit`, `jalapeno_exploded`) và được xử lý trong GDScript |
-| Tách logic và hiển thị | lõi C++ không bao giờ vẽ; `main_game.gd` chỉ đọc dữ liệu và gọi hàm của lõi |
+| Tách logic khỏi hiển thị | lõi C++ không bao giờ vẽ; `main_game.gd` chỉ đọc dữ liệu của lõi và gọi các hàm của lõi |
 | Tài nguyên và công cụ | chuẩn bị tài nguyên bằng script trong `tools/` (cắt ảnh, xoá nền, chuyển đổi âm thanh, sinh sprite bằng code) |
 | Kiểm thử | unit test C++ độc lập trong `test/` |
-| Git và làm việc nhóm | tự viết code module riêng và gửi để team lead tổng hợp/up lên repository |
+| Git và làm việc nhóm | mỗi người phát triển module riêng và gửi code để tổng hợp tập trung |
 
-### C. Các tính năng
+### C. Tính năng
 
-- Main Menu có **ô nhập username và nút ENTER**: nhập tên rồi bấm nút Tick (không dùng phím Enter) để xác nhận. Tên được cắt khoảng trắng, dài 1-16 ký tự, kiểm tra trùng không phân biệt hoa thường với leaderboard ("Username already exists"). Thông báo xanh "Username accepted" xác nhận thành công; nút Play chỉ hoạt động với tên đã xác nhận.
-- Màn "Ready... Set... PLANT!" (chữ nảy + âm thanh). 30 giây chuẩn bị và các wave chỉ bắt đầu sau khi màn này kết thúc.
+- Main Menu với ba nút hình ảnh từ `assets/ui/buttons.jpg` (được cắt bởi `tools/ui_art/prepare_ui_assets.py`): nút tròn **TICK** cạnh ô username, **PLAY** và **QUIT**. Gõ tên rồi **bấm TICK bằng chuột** để xác nhận (phím Enter không có tác dụng); **PLAY** chỉ bắt đầu game sau khi tên đã được xác nhận. Tên được cắt khoảng trắng, dài 1-16 ký tự, và được kiểm tra không phân biệt hoa thường với leaderboard của phiên này: tên đã có mục sẽ bị từ chối với thông báo "Username already exists". Tên hợp lệ được chấp nhận và hiện thông báo xanh "Username accepted". Cùng hàng có nút hình **LEADERBOARD** (xem kết quả của phiên này, có nút BACK) và **QUIT** (đóng ứng dụng). Cả năm nút (Tick, Play, Quit, Leaderboard, và Next/Back ở các màn khác) đều lấy từ sheet nút đá có sẵn; Next, Back và Leaderboard được tạo cùng phong cách bởi `tools/ui_art/make_nav_buttons.py`.
+- Màn giới thiệu "Ready... Set... PLANT!" (chữ nảy và âm thanh). Giai đoạn chuẩn bị 30 giây và các wave chỉ bắt đầu sau khi màn này kết thúc.
 - Bốn wave, tổng 25 kẻ địch. Trước wave cuối: biểu ngữ "A huge wave of zombies is approaching!" (4 giây), rồi biểu ngữ "Final Wave" (3 giây), và chỉ sau đó zombie wave 4 mới xuất hiện. Wave cuối có boss **Gargantuar** với thanh máu riêng.
-- Năm loại cây trong Seed Bank mới (hình thẻ, tên, giá Sun, tối đi khi không đủ Sun, sáng khung khi được chọn): Peashooter, Sunflower, Wall-nut, Jalapeno và Squash.
-  - Ô đã có cây: hiện thông báo "CANNOT PLANT HERE!".
-  - Không đủ Sun: hiện thông báo "NOT ENOUGH SUN! / NEED x SUN".
-- Hoa hướng dương tạo Sun **rơi từ trên xuống** một vị trí ngẫu nhiên trên bãi cỏ; bấm để thu thập.
+- Năm loại cây trong Seed Bank được thiết kế lại (hình thẻ, tên, giá Sun, tối đi khi không đủ Sun, sáng khung khi được chọn): Peashooter, Sunflower, Wall-nut, Jalapeno và Squash.
+  - Nếu ô đã có cây, hiện thông báo "CANNOT PLANT HERE!".
+  - Nếu không đủ Sun, hiện thông báo "NOT ENOUGH SUN! / NEED x SUN".
+- Sunflower tạo Sun **rơi từ trên xuống** một vị trí ngẫu nhiên trên bãi cỏ; bấm vào để thu thập.
 - **Xẻng** (ô xẻng có sẵn ở thanh trên; cây xẻng đi theo con trỏ khi đang chọn) gỡ cây ở ô được bấm (không hoàn Sun).
-- Mỗi hàng có một **máy cắt cỏ**: chạy một lần và quét sạch zombie trong hàng. Zombie tới cuối hàng khi máy cắt đã dùng sẽ kết thúc ván.
+- Một **máy cắt cỏ** mỗi hàng: chạy một lần và quét sạch zombie trong hàng. Zombie tới cuối hàng mà máy cắt đã dùng hết sẽ kết thúc ván chơi.
 - Squash nhảy lên đập zombie phía trước và làm rung màn hình ngắn khi chạm đất.
-- Zombie: thường, Conehead (có nón), Buckethead (có xô), Gargantuar (boss) và Imp do nó ném. Tất cả được ghép từ các mảnh rời trong `Regular_Zombies.png` / `zombie_Gargantuar.png` (hai sheet này không có frame hoạt ảnh nên chuyển động được tạo bằng mã). Nón và xô có ba trạng thái hư hỏng và bay ra khi bị phá.
-- Hình cây lấy từ các sheet có sẵn: Sunflower ghép từ mặt, cánh hoa và lá; Wall-nut đổi sang hình nứt khi bị thương; Jalapeno dùng hình đầy đủ trong sheet (có mắt và miệng). `python tools/plant_art/build_assets.py` tạo lại mọi ảnh dẫn xuất.
-- Màn Victory và Game Over (ảnh Game Over là ảnh "The Zombies Ate Your Brains!" có sẵn) với nút **Next** mở **Leaderboard** (username, điểm, Victory / Defeat; chỉ lưu trong bộ nhớ khi game đang chạy). Màn Leaderboard chỉ có nút Back (về menu).
+- Zombie: Thường, Conehead (có nón nhìn thấy được), Buckethead (có xô nhìn thấy được), Gargantuar (boss) và Imp do nó ném. Tất cả được ghép từ các mảnh rời trong `Regular_Zombies.png` / `zombie_Gargantuar.png` (các sheet này không chứa frame hoạt ảnh nên chuyển động được tạo bằng mã). Nón và xô có ba trạng thái hư hỏng và bay ra khi bị phá.
+- Hình nhân vật theo game gốc: `assets/references/original_pvz` chứa các hình minh hoạ tham chiếu, và `python tools/character_art/build_all.py` (cần Pillow, numpy, scipy, opencv-python-headless) cắt chúng thành các lớp rig trong `assets/characters/` (đầu/thân/chân zombie, nón và xô cắt từ hình Conehead / Buckethead với 3 trạng thái hư hỏng mỗi loại, các bộ phận Gargantuar + Imp cưỡi trên lưng, đầu/thân Sunflower và Peashooter, Jalapeno, các frame từ hoạt ảnh Squash gốc, Imp, và thân/động cơ/bánh xe của máy cắt cỏ). Viên đậu và các frame bắn tung màu xanh là khối "Pea" của `assets/projectiles/Projectiles.png`, được tách ra `assets/projectiles/pea/`. `python tools/plant_art/build_assets.py` tạo sprite Wall-nut, xẻng và các ảnh cắt biểu ngữ từ các sheet có sẵn.
+- Hoạt ảnh ghép mảnh (không bao giờ xoay một ảnh duy nhất để giả vờ đi bộ): zombie lắc lư, bước và cắn; Gargantuar vung cột, đập xuống và ngả người ra sau để ném Imp, Imp bay tới điểm hạ cánh; Sunflower và Peashooter lắc lư (Peashooter giật lùi khi bắn); Wall-nut thở, chớp mắt và giật mình; Jalapeno phát sáng và rung khi ngòi cháy hết; Squash cúi người, nhảy lên và để lại vết dẹp.
+- Màn Victory và Game Over (ảnh Game Over là ảnh "The Zombies Ate Your Brains!" có sẵn) với nút hình **Next** mở **Leaderboard** sau trận (username, điểm, Victory / Defeat). Mở từ menu thì chỉ có **Back**. Mở sau một trận thì có **Restart** (nút mũi tên tròn) và **Back**. **Restart** chơi lại với cùng username từ một trận hoàn toàn mới; khi trận kết thúc, mục *hiện có* của người chơi được cập nhật bằng kết quả mới nhất (không bao giờ tạo hàng thứ hai), nên người chơi có thể restart liên tục để thay đổi thứ hạng. **Back** kết thúc phiên của người chơi và quay về menu; mục đó vẫn nằm trên bảng, nên username đó không thể bắt đầu game mới và người chơi kế tiếp phải nhập tên khác. **Leaderboard chỉ tồn tại trong phiên chạy**: mục của người chơi được tạo trong bộ nhớ ngay khi trận đầu tiên kết thúc, được giữ trong khi ứng dụng còn mở và bị huỷ khi thoát; không có gì được ghi ra đĩa, nên mỗi lần khởi động đều bắt đầu với bảng trống.
 - Pause (Resume / Quit về menu) làm đứng hình toàn bộ màn hình.
-- Nhạc và hiệu ứng âm thanh, gồm tiếng Squash đập, âm Start Text và tiếng Gargantuar chết.
+- Nhạc và hiệu ứng âm thanh, gồm Máy cắt cỏ (một âm thanh cho mỗi lần kích hoạt, dừng khi lượt chạy kết thúc), âm báo Squash (phát khi zombie tiến tới trong khoảng một ô của tầm tấn công, bị huỷ nếu zombie rời đi trước; không bao giờ phát khi trồng cây), jingle Start Text và tiếng Gargantuar chết.
 - Bãi cỏ co giãn theo kích thước cửa sổ.
 
 ### D. Cơ chế trò chơi
@@ -392,11 +402,11 @@ Mọi giá trị lấy từ mã nguồn C++.
 |---|---|---|---|
 | Sunflower | 50 | 100 | Tạo 25 Sun mỗi 5 giây (rơi từ trên xuống). Sun không được nhặt sẽ biến mất 10 giây sau khi chạm cỏ. |
 | Peashooter | 100 | 300 | Bắn một viên đậu mỗi 1,4 giây khi có zombie cùng hàng ở phía trước. Mỗi viên gây đúng 20 sát thương và bay 5 ô/giây. |
-| Wall-nut | 50 | 600 | Chặn zombie. "Last stand": lần đầu máu còn 25 % trở xuống, giảm 50 % sát thương nhận vào trong 5 giây. |
+| Wall-nut | 50 | 600 | Chặn zombie. "Last stand": lần đầu máu còn 25 % trở xuống, nó nhận ít hơn 50 % sát thương trong 5 giây. |
 | Jalapeno | 125 | 300 | Sau 2 giây đếm ngược, nổ và gây 900 sát thương cho mọi zombie cùng hàng. |
 | Squash | 50 | 300 | Dùng một lần. Khi có zombie trong khoảng 1,5 ô phía trước cùng hàng, nó nhảy (0,5 giây) rồi đập 1800 sát thương quanh điểm hạ cánh. |
 
-| Kẻ địch | Giáp | Máu thân | Tổng |
+| Kẻ địch | Máu giáp | Máu thân | Tổng |
 |---|---|---|---|
 | Thường | – | 200 | 200 |
 | Conehead | 370 | 200 | 570 |
@@ -404,67 +414,78 @@ Mọi giá trị lấy từ mã nguồn C++.
 | Gargantuar (boss) | – | 2000 | 2000 |
 | Imp | – | 100 | 100 |
 
-Giáp nhận sát thương trước; phần dư trừ vào máu thân (400 sát thương lên Conehead = 370 giáp + 30 máu thân). Zombie thường đi một cột mỗi 4,7 giây và cắn 10 sát thương mỗi giây. Gargantuar đi một cột mỗi 9,4 giây và đập cây 300 mỗi 1,5 giây. Imp đi một cột mỗi 2,8 giây.
+Giáp nhận sát thương trước; phần dư trừ vào máu thân (400 sát thương lên Conehead = 370 giáp + 30 máu thân). Zombie thường đi một cột mỗi 4,7 giây và cắn 10 sát thương mỗi giây. Gargantuar đi một cột mỗi 9,4 giây và đập cây 300 sát thương mỗi 1,5 giây. Imp đi một cột mỗi 2,8 giây.
 
-**Gargantuar:** khi máu còn 1000 trở xuống nó ném **đúng một Imp** (đứng yên 1 giây khi ném). Sát thương luôn đi qua đường xử lý thông thường: Jalapeno (900) và Squash (1800) không giết được Gargantuar còn đầy máu trong một đòn.
+**Gargantuar:** khi máu còn 1000 trở xuống, nó ném **đúng một Imp** (đứng yên 1 giây khi ném). Sát thương luôn đi qua đường xử lý thông thường: Jalapeno (900) và Squash (1800) không thể giết Gargantuar còn đầy máu trong một đòn.
 
 **Các wave (tổng 25 kẻ địch):**
 
-| Wave | Số kẻ địch | Khoảng cách xuất hiện | Loại |
+| Wave | Số kẻ địch | Xuất hiện mỗi | Loại |
 |---|---|---|---|
 | 1 | 3 | 10 giây | Thường |
 | 2 | 5 | 5 giây | Thường hoặc Conehead |
 | 3 | 7 | 5 giây | Thường, Conehead hoặc Buckethead |
 | 4 | 10 | 5 giây | đúng 4 Thường, 3 Conehead, 2 Buckethead và 1 Gargantuar: 3 zombie thường đầu tiên, rồi Gargantuar, rồi 6 zombie còn lại |
 
-- Giữa hai wave nghỉ 3 giây, và 7 giây trước wave cuối: "A huge wave..." hiện khi khoảng nghỉ này bắt đầu (4 giây), "Final Wave" nối tiếp (3 giây), rồi wave 4 bắt đầu. Chuỗi này chạy theo đồng hồ game nên Pause làm nó dừng lại.
+- Giữa hai wave nghỉ 3 giây, và 7 giây trước wave cuối: "A huge wave..." hiện khi khoảng nghỉ này bắt đầu (4 giây), "Final Wave" nối tiếp (3 giây), và wave 4 bắt đầu khi nó kết thúc. Chuỗi này chạy theo đồng hồ game nên Pause làm nó dừng lại.
 - Mỗi kẻ địch vào một hàng ngẫu nhiên, xuất hiện ngay ngoài mép phải bãi cỏ.
 
-**Máy cắt cỏ:** mỗi hàng một cái, kích hoạt khi zombie tới mép trái bãi cỏ. Zombie thường và Imp trong hàng bị quét sạch. Gargantuar thì không: nó nhận 400 sát thương và bị đẩy lùi 2 cột, máy cắt đó hết lượt.
+**Máy cắt cỏ:** mỗi hàng một cái, kích hoạt khi zombie tới mép trái bãi cỏ. Zombie thường và Imp trong hàng bị quét sạch. Gargantuar thì không: nó nhận 400 sát thương và bị đẩy lùi 2 cột, và máy cắt đó hết lượt dùng.
 
 **Thắng và thua:**
 
 - **Thắng:** cả 25 kẻ địch đã xuất hiện và không còn ai sống (kể cả Gargantuar và Imp).
 - **Thua:** có zombie đi qua mép trái của một hàng mà máy cắt đã dùng hết. Điều kiện thua được kiểm tra trước.
-- **Điểm:** Thắng = tổng Sun đã thật sự tiêu để trồng cây trong ván (Sun còn lại không tính, xẻng không hoàn Sun); Thua = 0. Leaderboard xếp mọi ván Thắng lên trước (tiêu ít Sun hơn xếp cao hơn), rồi tới các ván Thua.
+- **Điểm:** Thắng = tổng Sun thực sự đã tiêu để trồng cây trong ván (Sun còn lại không tính, xẻng không hoàn Sun); Thua = 0. Leaderboard xếp mọi ván Thắng lên trước (tiêu ít Sun hơn xếp cao hơn), rồi tới các ván Thua.
 
 ### E. Cấu trúc dự án
 
+Chỉ liệt kê các thư mục và file có trong dự án. Mục đánh dấu *(sinh ra)* được tạo bởi công cụ và không nằm trong cây mã nguồn.
+
 ```
-SConstruct                 script build thư viện GDExtension C++ (SCons)
-extern/godot-cpp/          thư viện godot-cpp (git submodule)
-src/                       lõi game C++
+README.md                  file này
+SConstruct                 script build GDExtension C++ (SCons)
+.gitmodules, .gitignore    định nghĩa submodule; quy tắc bỏ qua
+extern/godot-cpp/          binding godot-cpp (git submodule; ZIP chứa mã nguồn, không có kết quả build)
+src/                       lõi game C++ (*.cpp / *.hpp)
   entity.*                 lớp cơ sở: máu, vị trí, hiệu ứng trạng thái
   plant.*, peashooter.*, sunflower.*, wallnut.*, jalapeno.*, squash.*
-  gargantuar.*, imp.*      boss và Imp do nó ném; lawn_mower.hpp = máy cắt cỏ mỗi hàng
-  zombie.*                 di chuyển, ăn cây, giáp
+  zombie.*, gargantuar.*, imp.*   di chuyển, ăn cây, giáp; boss và Imp do nó ném
+  lawn_mower.hpp           máy cắt cỏ mỗi hàng (trạng thái + chuyển động)
   bullet.*, grid.*, sun_economy.*, status_effect.hpp
-  wave_manager.*           thời gian chuẩn bị, wave, sinh zombie
-  game_controller.*        node Godot sở hữu và cập nhật mọi thứ
+  wave_manager.*           bộ đếm chuẩn bị, wave, sinh zombie
+  game_controller.*        node Godot sở hữu và cập nhật mọi thứ; phát signal cho giao diện
   pvz_library_init.cpp     đăng ký GameController với Godot
-test/                      unit test C++ độc lập (di chuyển zombie, giáp, wave, Squash, Jalapeno, máy cắt cỏ)
+test/                      unit test C++ độc lập (xem test/README.md)
+  wave_manager_test.cpp, squash_test.cpp, jalapeno_test.cpp, zombie_movement_test.cpp, zombie_visual_state_test.cpp
+  stubs/game_controller.hpp   bản giả của controller phụ thuộc Godot
 plants-vs-zombies/         dự án Godot
   project.godot            cấu hình; scene khởi động = scenes/menu.tscn; autoload Audio và Session
-  scenes/menu.tscn         Main Menu        (main_menu.gd)
-  scenes/main.tscn         GameController + giao diện trận đấu (MainGame.tscn)
-  MainGame.tscn            bãi cỏ, HUD, lớp phủ pause / victory / game over (main_game.gd)
-  board.tscn / board.gd    ảnh bãi cỏ + 45 ô bấm, co giãn theo cửa sổ
-  hud.tscn, seed_bank.tscn, sun_display.tscn, pause_button.tscn
-  win_screen.tscn, lose_screen.tscn
-  main_game.gd             hiển thị: đọc dữ liệu lõi mỗi frame, vẽ cây/zombie/đạn/Sun
-  zombie_view.gd           hoạt ảnh zombie + thanh máu
-  peashooter_view.gd       Peashooter ghép từ các mảnh, hoạt ảnh idle/bắn
-  jalapeno_fire.gd         hiệu ứng lửa (chỉ hình) khi Jalapeno nổ
-  puppet_zombie.gd         Gargantuar / Imp ghép từ các mảnh rời trong assets/zombies/{gargantuar,imp}
-  session.gd               autoload: kiểm tra username + leaderboard trong bộ nhớ (theo phiên)
-  leaderboard.gd           màn Leaderboard (scenes/leaderboard.tscn): chỉ nút Back
-  stone_ui.gd              nút / ô nhập kiểu đá dựng bằng control của Godot
-  tests/                   script kiểm thử Godot (headless và có cửa sổ)
-  audio.gd                 bộ quản lý âm thanh duy nhất (nhạc + hiệu ứng)
-  stone_button.gd, stone_title.gd   nút giao diện và tiêu đề pixel
-  assets/                  hình ảnh, sprite và âm thanh
   bin/pvz.gdextension      cho Godot biết vị trí thư viện C++ đã biên dịch
-tools/                     các script tạo ra tài nguyên đã xử lý (xem tools/README.md)
+  bin/libpvz.windows.template_debug.x86_64.dll   (sinh ra bởi `scons`; có trong ZIP nộp bài)
+  scenes/                  menu.tscn (Main Menu), main.tscn (GameController + giao diện game), leaderboard.tscn
+  MainGame.tscn, board.tscn, hud.tscn, seed_bank.tscn, sun_display.tscn, pause_button.tscn, win_screen.tscn, lose_screen.tscn
+  main_game.gd             hiển thị: đọc dữ liệu lõi mỗi frame, vẽ cây / zombie / đậu / Sun / máy cắt cỏ
+  main_menu.gd             Main Menu: ô username, Tick, Play, Quit, Leaderboard
+  leaderboard.gd           màn Leaderboard (từ menu: Back; sau trận: Restart + Back)
+  session.gd               autoload: kiểm tra username + leaderboard trong bộ nhớ, chỉ theo phiên
+  audio.gd                 autoload: bộ quản lý âm thanh duy nhất (nhạc, hiệu ứng, kênh riêng cho máy cắt cỏ / Squash)
+  board.gd                 ảnh bãi cỏ + 45 ô bấm, co giãn theo cửa sổ
+  plant_rig.gd, peashooter_view.gd, jalapeno_fire.gd, pea_impact.gd   rig cây, lửa Jalapeno, vết bắn của đậu
+  puppet_zombie.gd, zombie_view.gd   rig zombie (thường, giáp, Gargantuar, Imp) và phần hiển thị / thanh máu
+  stone_ui.gd, stone_button.gd, stone_title.gd   nút kiểu ảnh / đá và tiêu đề pixel
+  tests/                   script kiểm thử Godot (headless và có cửa sổ)
+  assets/                  hình ảnh, sprite và âm thanh (xem H. Phân loại tài nguyên)
+  grid.jpg, menu.jpg, icon.svg
+  .godot/                  (Godot sinh ra khi mở lần đầu; không đóng gói)
+tools/                     script tạo ra tài nguyên đã xử lý, và các trình chạy test
+  README.md                mỗi công cụ tài nguyên đọc và ghi gì
+  character_art/, plant_art/, lawn_art/, peashooter/, ui_art/, zombie_art/, audio/   script tài nguyên
+  run_core_tests.sh        build + chạy unit test C++ (g++)
+  run_godot_tests.ps1      chạy mọi test Godot
+  run_scenarios.ps1        chạy các kịch bản luồng người dùng, mỗi kịch bản trong một tiến trình riêng
+  make_submission_zip.py   tạo ZIP nộp bài (nội dung đưa vào / bỏ ra được ghi trong script)
+build/                     (sinh ra) kết quả build test C++ cục bộ; không đóng gói
 ```
 
 ### F. Yêu cầu
@@ -475,13 +496,28 @@ Phần này khớp với cấu hình dự án; các môi trường khác chưa �
 - **Godot 4.7.** Dự án khai báo phiên bản 4.7 và được phát triển trên **Godot 4.7.2-stable**.
 - **Để build thư viện C++:**
   - Git, để tải submodule `extern/godot-cpp`;
-  - Python 3 và **SCons**;
-  - trình biên dịch C++17 (nhóm dùng MSVC trong Visual Studio Build Tools).
+  - Python 3 cùng **SCons**;
+  - trình biên dịch C++17 nằm trong PATH của terminal chạy SCons (nhóm dùng MSVC từ Visual Studio Build Tools, ví dụ "Developer Command Prompt").
+  - `extern/godot-cpp` phải đúng commit được repository ghim (`507ed9d`); file ZIP đã chứa chính xác mã nguồn đó.
 - **Tuỳ chọn, để chạy unit test:** bất kỳ trình biên dịch C++17 nào, ví dụ g++.
 
 ### G. Hướng dẫn chạy
 
-1. Clone repository kèm submodule:
+**Từ ZIP nộp bài (không cần build, Windows):**
+
+1. Cài **Godot 4.7.x** (bản "standard", không phải .NET; nhóm dùng 4.7.2-stable) từ <https://godotengine.org>. Không cần cài đặt game.
+2. Giải nén ZIP ở bất kỳ đâu (đường dẫn không có ký tự đặc biệt là an toàn nhất).
+3. Mở Godot, bấm **Import**, chọn `Team-2-Plants-Vs-Zombies/plants-vs-zombies/project.godot`, rồi **Import & Edit**. Lần đầu mở, Godot tự import hình ảnh và âm thanh; hãy chờ thanh tiến trình chạy xong (khoảng một phút).
+4. Bấm **F5** (Run Project). Game bắt đầu ở Main Menu: gõ username, bấm **tick**, bấm **Play**.
+5. Cách khác bằng dòng lệnh: `Godot.exe --path <thư mục giải nén>/plants-vs-zombies` (chạy `Godot.exe --headless --path <thư mục giải nén>/plants-vs-zombies --import` một lần trước đó).
+
+Thư viện đã biên dịch `plants-vs-zombies/bin/libpvz.windows.template_debug.x86_64.dll` được kèm sẵn. Nếu Godot báo không biết `GameController`, nghĩa là file đó bị thiếu hoặc bị phần mềm diệt virus chặn; hãy build lại như mô tả bên dưới (thư viện chỉ được dùng khi chạy từ editor / `--path`; dự án không có bản export release).
+
+**Tự build thư viện** chỉ cần thiết nếu bạn sửa mã C++. ZIP chứa `extern/godot-cpp` (chỉ mã nguồn); từ thư mục gốc đã giải nén, chạy `scons` với trình biên dịch C++17 và SCons đã cài (Python 3: `pip install scons`).
+
+**Từ Git repository (tự build):**
+
+1. Clone repository, kèm submodule:
    ```
    git clone --recurse-submodules https://github.com/trnbngocc/Team-2-Plants-Vs-Zombies.git
    cd Team-2-Plants-Vs-Zombies
@@ -492,8 +528,8 @@ Phần này khớp với cấu hình dự án; các môi trường khác chưa �
    scons
    ```
    Lệnh này tạo `plants-vs-zombies/bin/libpvz.windows.template_debug.x86_64.dll`. Chỉ thư viện debug được build, đúng loại mà Godot editor dùng.
-3. Mở Godot 4.7 và chọn **Import** để mở `plants-vs-zombies/project.godot`. Lần đầu, Godot sẽ tự import hình ảnh và âm thanh.
-4. Bấm **Run** (F5). Trò chơi bắt đầu ở Main Menu.
+3. Mở Godot 4.7 và dùng **Import** để mở `plants-vs-zombies/project.godot`. Lần đầu, Godot tự động import hình ảnh và âm thanh.
+4. Bấm **Run** (F5). Game bắt đầu ở Main Menu.
 
 Nếu Godot báo không biết `GameController`, nghĩa là thiếu file DLL ở bước 2. Nếu build lại khi editor đang mở, hãy khởi động lại editor để nạp DLL mới.
 
@@ -503,39 +539,111 @@ Nếu Godot báo không biết `GameController`, nghĩa là thiếu file DLL ở
 bash tools/run_core_tests.sh                       # unit test C++ (g++, không cần Godot)
 Godot --headless --path plants-vs-zombies --script res://tests/core_integration_test.gd   # lõi C++ thật qua DLL đã build
 Godot --headless --path plants-vs-zombies --script res://tests/session_test.gd            # username + leaderboard
-powershell -File tools/run_scenarios.ps1 -Godot <Godot.exe>        # luồng menu -> ván -> kết quả -> leaderboard (xem phần tiếng Anh, mục J)
+powershell -File tools/run_godot_tests.ps1 -Godot <Godot.exe>      # mọi test Godot (gồm tests/audio_test.gd: âm thanh máy cắt cỏ + Squash; tests/death_test.gd: hoạt ảnh chết)
+powershell -File tools/run_scenarios.ps1 -Godot <Godot.exe>        # Quit ở menu, leaderboard ở menu, TICK/PLAY so với bàn phím, luồng NEXT/BACK, trống sau khi mở lại
+Godot --path plants-vs-zombies --windowed --resolution 1152x648 --script res://tests/projectile_test.gd -- <thư mục>    # sprite đậu, vết bắn chỉ khi trúng thật
 Godot --path plants-vs-zombies --windowed --resolution 1152x648 --script res://tests/behaviour_capture.gd -- <thư mục> # rung màn hình, xẻng, pause, boss, seed bank (+ ảnh chụp)
 Godot --path plants-vs-zombies --windowed --resolution 1152x648 --script res://tests/final_wave_sequence_test.gd -- <thư mục> # banner 1 -> banner 2 -> wave 4, không chồng nhau, pause
+Godot --path plants-vs-zombies --windowed --resolution 1152x648 --script res://tests/throw_capture.gd -- <thư mục>  # Gargantuar ném Imp (các frame)
+Godot --path plants-vs-zombies --windowed --resolution 1152x648 --script res://tests/plants_capture.gd -- <thư mục>  # hoạt ảnh cây
 ```
 
-### H. Hướng dẫn sử dụng để học tập
+### H. Phân loại tài nguyên
+
+Mọi tài nguyên game nằm trong `plants-vs-zombies/assets/` (hai ảnh nguồn nhỏ, `grid.jpg` và `menu.jpg`, nằm trong `plants-vs-zombies/`). Nhiều file hình là **sprite sheet** hoặc hình minh hoạ tham chiếu; các script trong `tools/` cắt chúng thành từng sprite, lớp và frame hoạt ảnh riêng mà Godot nạp. Các sheet không bao giờ bị chỉnh sửa: *nguồn* được giữ nguyên như được cung cấp, các file *đã xử lý* được sinh ra từ chúng. Tên dưới đây là tên file thật; "nguồn" = sheet hoặc ảnh được cung cấp, "đã xử lý" = được cắt, chuyển đổi hoặc sinh ra bởi một script trong `tools/`.
+
+| Loại tài nguyên | Thư mục | Nội dung / mục đích |
+|---|---|---|
+| Tài nguyên cây | `assets/characters/{sunflower,peashooter,jalapeno,squash}/`, `assets/characters/icons/`, `assets/plants/` | **Đã xử lý (đang dùng):** các mảnh theo lớp của cây: `sunflower/{head,stem}.png`, `peashooter/{head,stem}.png`, `jalapeno/jalapeno.png`, 23 frame hoạt ảnh Squash `squash/f00..f59.png`; icon Seed Bank `icons/{sunflower,peashooter,wallnut,jalapeno,squash}.png`; ảnh hư hỏng của Wall-nut `plants/wall-nut/wallnut_{1,2,3}.png`. `assets/plants/peashooter/parts/` (22 mảnh) cùng `layout.json` và `peashooter_layout.gd` là Peashooter ghép từng bộ phận. **Sheet nguồn:** `plants/{sunflower,jalapeno,squash,wall-nut}/*.png`, `plants/peashooter/168191.png` |
+| Tài nguyên zombie | `assets/characters/{zombie,gargantuar,imp}/` | **Đã xử lý (đang dùng):** zombie thường `zombie/{head,body,feet}.png`; giáp Conehead / Buckethead ở ba mức hư hỏng `zombie/{cone,bucket}_{1,2,3}.png`; Gargantuar `gargantuar/{body,feet,grip,hand,head,imp_rider,pole}.png`; Imp `imp/{head,body,arm,leg,shoe}.png`. Chúng được cắt từ các ảnh tham chiếu HD trong `assets/references/original_pvz/` bởi `tools/character_art/`. Thân, tay, chân và giày của Imp là các mảnh vẽ lại, không phải ảnh cắt (xem I) |
+| Tài nguyên đạn | `assets/projectiles/` | **Nguồn:** `Projectiles.png` (sheet nhiều loại đạn, giữ nguyên), `shoot.jpg`. **Đã xử lý (đang dùng):** `pea/pea.png` (viên đậu đang bay), `pea/splat_1..4.png` và `pea/dot_1..3.png` (hiệu ứng va chạm), tất cả lấy từ khối "Pea" của `Projectiles.png`. `pea_projectile.png` (ảnh cắt cũ từ `shoot.jpg`) không còn được dùng |
+| Tài nguyên môi trường | `assets/lawn/`, `assets/seed_bank.jpg`, `assets/env/shovel/`, `grid.jpg` | Ảnh bãi cỏ và lưới: `lawn/lawngrid-day.png` là bãi cỏ mà board dùng (`board.tscn`); `grid.jpg` là lưới nguồn được cung cấp; `lawn/lawn_game.jpg` là bãi cỏ sinh ra cũ hơn (`tools/lawn_art`, không dùng). Xẻng: `env/shovel/Shovel.jpg` (nguồn) và `shovel_cutout.png` (đã xử lý, đang dùng). `seed_bank.jpg` là thanh Seed Bank; `assets/sưnn.png` là sprite Sun |
+| Tài nguyên Máy cắt cỏ | `assets/env/lawn_mower/`, `assets/characters/mower/` | **Nguồn:** `env/lawn_mower/lawn_mover_all.png` (sheet; thư mục giữ nguyên cách viết gốc của tên file). **Đã xử lý (đang dùng):** `characters/mower/{body,engine,wheel}.png`, các lớp mà game ghép lại để bánh xe quay được. `env/lawn_mower/lawn_mower.png` là ảnh cắt đơn cũ hơn (không dùng). Kích thước và vị trí theo `references/original_pvz/full_lawn_grid_mower.jpg` |
+| Tài nguyên giao diện | `assets/ui/` | **Nguồn:** `buttons.jpg` (sheet nút đá). **Đã xử lý (đang dùng):** `buttons/{play,quit,pause,tick}.png` cắt từ đó; `buttons/{next,back,leaderboard}.png` được tạo cho dự án này cùng phong cách (xem I); `menu_background.jpg` (từ `menu.jpg`, đã xoá logo nhà phát hành); `Start_Text.png` ("Ready, Set, Plant!"), `huge_wave_text.png`, `final_wave_text.png` (chữ cắt từ `A_huge_wave_is_approaching.png` / `final-wave.png`), `Game Over Screen.png`, `seed_packet/SeedPackets.png`. Chữ Victory được vẽ trong Godot (`stone_title.gd`); leaderboard được dựng từ control của Godot (`stone_ui.gd`) |
+| Tài nguyên âm thanh | `assets/audio/` | Nhạc: `menu.ogg`, `gameplay_music.ogg` (chuyển đổi từ các file `.m4a`, vẫn được giữ làm nguồn). Hiệu ứng: `button_click`, `planting`, `peashooter` (đậu trúng), `sun_collect`, `zombie_eating`, `jalapeno_explosion`, `squash` (âm báo Squash), `lawn_mower`, `gargantuar_death`, `win`, `lose`, `plants-vs-zombies-ready-set-plant`, và `The zombies are coming Plants vs Zombies Sound Effect` (tất cả là `.mp3`). Chi tiết theo từng sự kiện và điểm bắt đầu: `tools/README.md` |
+| Tài liệu tham chiếu | `assets/references/original_pvz/` | Hình minh hoạ HD tham chiếu của các nhân vật (`*.webp`, `zombie_pose.jpg`, `squash_move.gif`) và một ảnh bãi cỏ đầy đủ có máy cắt cỏ. Chúng là **nguồn** cho các nhân vật ghép mảnh và là mục tiêu hình ảnh để định cỡ máy cắt cỏ; game không nạp chúng |
+| Cũ / không dùng | xem bên dưới | Các file cũ hoặc thay thế vẫn còn trong repository làm việc nhưng game không nạp |
+
+Game không nạp và **không đóng gói trong ZIP nộp bài** (vẫn còn trong repository làm việc): các sheet zombie sinh ra cũ trong `assets/zombies/`, `assets/lawn/lawn_game.jpg`, `assets/env/lawn_mower/lawn_mower.png`, các ảnh lẻ nằm trực tiếp trong `assets/` (`168191.png`, `chilli.png`, `pea.png`, `sunflower (1).png`, `wallnut (1).png`), các file âm thanh `brainzzz.mp3`, `choose_plant.m4a`, `zombie_falling_1.ogg`, và `assets/references/start_text_preview/` (ảnh xuất để xem lại các bản cắt Start Text).
+
+### I. Nguồn tài nguyên và ghi công
+
+**Quan trọng.** Game này mô phỏng *Plants vs. Zombies* (PopCap Games / Electronic Arts). Phần lớn hình ảnh và toàn bộ file âm thanh trong dự án được nhóm **lấy từ các nguồn bên ngoài** và *không* phải sản phẩm của chúng tôi. Các file dự án không ghi lại mỗi file được tải từ đâu hay theo giấy phép nào. Vì vậy, với mọi tài nguyên như thế, mục ghi là **Chưa xác minh nguồn/giấy phép**; không có nội dung nào ở đây khẳng định các tài nguyên này là nguyên bản hay được cấp phép tự do. Chúng chỉ được đưa vào ZIP nộp bài để có thể chấm game. Vì giấy phép của chúng chưa được làm rõ, `.gitignore` giữ các file âm thanh, bãi cỏ, giao diện và hình đạn ra khỏi Git repository công khai (xem chú thích trong `.gitignore`).
+
+| Tài nguyên (thư mục) | Nguồn gốc theo những gì dự án cho thấy | Trạng thái |
+|---|---|---|
+| Hình minh hoạ nhân vật trong `assets/references/original_pvz/` (Sunflower, Peashooter, Jalapeno, Squash, Gargantuar, Imp, Conehead, Buckethead, zombie pose, Lawn Mower, `squash_move.gif`, `full_lawn_grid_mower.jpg`) | Hình *Plants vs. Zombies* do nhóm cung cấp (tên file: `*_Zombie.webp`, `Lawn_Mower.webp`, ...) | **Bên ngoài / tham chiếu.** Chưa xác minh nguồn/giấy phép |
+| `assets/characters/{sunflower,peashooter,jalapeno,squash,zombie,gargantuar}`, `characters/icons` | Bản cắt / tách lớp phái sinh từ các hình tham chiếu trên, tạo bởi `tools/character_art/` | **Bản cắt phái sinh** từ hình chưa xác minh giấy phép |
+| `assets/characters/imp/{body,arm,leg,shoe}.png` | Được vẽ cho dự án này bằng script (`tools/character_art/imp_parts.py`) theo màu của hình tham chiếu; hình tham chiếu không có chân Imp. `imp/head.png` là ảnh cắt từ hình tham chiếu Gargantuar | **Tạo cho dự án này** (thân, tay, chân, giày) + đầu được cắt |
+| `assets/plants/{sunflower,jalapeno,squash,wall-nut}`, `plants/peashooter/168191.png` | Các sprite sheet của cây được cung cấp. `plants/wall-nut/wallnut_{1,2,3}.png` và `characters/icons/wallnut.png` là hình Wall-nut, không có hình tham chiếu HD; `wallnut_1.png` (và bản icon) được nhóm chỉnh tay để xoá một viền xanh mỏng | **Bên ngoài.** Chưa xác minh nguồn/giấy phép |
+| `assets/projectiles/Projectiles.png`, `shoot.jpg` và các `pea/*.png` đã tách | Sheet / ảnh đạn được cung cấp; `pea/*` là ảnh cắt từ khối "Pea" của `Projectiles.png` | **Bên ngoài + bản cắt phái sinh.** Chưa xác minh nguồn/giấy phép |
+| `assets/env/lawn_mower/lawn_mover_all.png` và `characters/mower/*` | Sheet máy cắt cỏ được cung cấp; ba lớp là ảnh cắt từ khối "Lawn Mower" của nó | **Bên ngoài + bản cắt phái sinh.** Chưa xác minh nguồn/giấy phép |
+| `assets/env/shovel/Shovel.jpg`, `shovel_cutout.png`; `assets/lawn/lawngrid-day.png`; `grid.jpg`; `assets/seed_bank.jpg`; `assets/sưnn.png` (sprite Sun) | Ảnh được cung cấp; `shovel_cutout.png` là bản đã xử lý của `Shovel.jpg` | **Bên ngoài.** Chưa xác minh nguồn/giấy phép |
+| `assets/ui/buttons.jpg` và `buttons/{play,quit,pause,tick}.png` | Sheet nút "đá" pixel-art được cung cấp; bốn file PNG là ảnh cắt từ nó (`tools/ui_art/prepare_ui_assets.py`) | **Bên ngoài + bản cắt phái sinh.** Chưa xác minh nguồn/giấy phép |
+| `assets/ui/buttons/{next,back,leaderboard}.png` | Được sinh bởi `tools/ui_art/make_nav_buttons.py` từ `quit.png`: chữ QUIT bị tô đè và chữ mới được vẽ cùng màu và cùng lưới pixel | **Tạo cho dự án này**, phái sinh từ ảnh cắt của sheet nút |
+| `assets/ui/menu_background.jpg` (từ `menu.jpg`), `Start_Text.png`, `Game Over Screen.png`, `A_huge_wave_is_approaching.png`, `final-wave.png`, `huge_wave_text.png`, `final_wave_text.png`, `seed_packet/SeedPackets.png` | Ảnh tiêu đề / biểu ngữ / thẻ hạt giống được cung cấp; `menu_background.jpg` là `menu.jpg` đã xoá logo nhà phát hành; hai file `*_text.png` là chữ cắt từ các biểu ngữ được cung cấp | **Bên ngoài, có chỉnh sửa một phần.** Chưa xác minh nguồn/giấy phép |
+| `assets/audio/*` | File âm thanh được cung cấp; hai file nhạc `.ogg` là bản chuyển đổi từ các file `.m4a` được cung cấp | **Bên ngoài.** Chưa xác minh nguồn/giấy phép |
+| `assets/zombies/*` (các sheet sinh ra cũ, không đóng gói) | Được vẽ bằng thủ tục bởi `tools/zombie_art/generate_zombies.py` (README của nó nêu rằng không dùng sprite nào của game) | **Tạo cho dự án này**, nhưng game không còn dùng |
+| Mã nguồn (C++ `src/`, `test/`, GDScript, `tools/`) | Do nhóm viết; lõi C++, các script giao diện và test được mở rộng với sự hỗ trợ của một trợ lý lập trình AI (Claude Code) | Dự án của nhóm; **godot-cpp** (giấy phép MIT, xem `extern/godot-cpp/LICENSE.md`) và **Godot Engine** (MIT) là của bên thứ ba |
+
+Nếu bạn xác định được nguồn gốc và giấy phép ban đầu của một tài nguyên ở trên, hãy thay mục "Chưa xác minh nguồn/giấy phép" của nó.
+
+### J. Kiểm thử và hạn chế đã biết
+
+**Các test tự động hiện có** (lệnh ở [G. Hướng dẫn chạy](#g-hướng-dẫn-chạy)):
+
+| Test | Phạm vi | Kết quả lần cuối |
+|---|---|---|
+| `tools/run_core_tests.sh` (5 chương trình C++ trong `test/`) | wave và sinh zombie, di chuyển zombie và giáp, trạng thái hiển thị, Squash (nhảy, dùng một lần, báo động / huỷ, hàng khác), Jalapeno | tất cả đạt |
+| `tests/core_integration_test.gd` | lõi C++ thật qua DLL đã build (kinh tế, cây, zombie, wave, máy cắt cỏ, tính điểm, signal) | 93 kiểm tra, 0 lỗi |
+| `tests/session_test.gd` | kiểm tra username, một mục mỗi username, restart cập nhật cùng một mục, Back giữ tên đã bị chiếm, xếp hạng, không ghi ra đĩa | 34 / 0 |
+| `tests/behaviour_capture.gd`, `final_wave_sequence_test.gd`, `projectile_test.gd`, `throw_capture.gd`, `plants_capture.gd` (có cửa sổ) | rung màn hình, xẻng, pause, boss; thứ tự thông báo final wave; sprite đậu và va chạm chỉ khi trúng thật; Gargantuar ném Imp; hoạt ảnh cây | 31 / 13 / 10 / 3 / 4 kiểm tra, 0 lỗi |
+| `tests/audio_test.gd` (có cửa sổ) | âm thanh Máy cắt cỏ và Squash bắt đầu / dừng / không trùng lặp / pause; Squash im lặng khi trồng và với hàng khác | 24 / 0 |
+| `tests/death_test.gd` (có cửa sổ) | chết mất đầu với Thường / Conehead / Buckethead / Imp, xử lý mũ, Máy cắt cỏ hất mạnh hơn, Jalapeno / Squash / Gargantuar chỉ ngã bình thường, pause, dọn dẹp, không trễ Victory | 38 / 0 |
+| `tools/run_scenarios.ps1` | sự kiện chuột và phím thật qua các menu trong các tiến trình riêng: Quit, leaderboard và Back, Tick so với phím Enter so với Play, Victory / Game Over -> Next -> Back, hai trận, trống sau khi mở lại | 18 kiểm tra, 0 lỗi |
+
+Các bộ test được chạy cùng nhau lần cuối trên máy Windows của lập trình viên, với editor Godot 4.7.2-stable và DLL debug. Ảnh chụp màn hình chúng lưu lại dùng để con người kiểm tra bằng mắt.
+
+**Các tính năng đã kiểm tra bằng cách chạy game:** luồng menu, quy tắc username, một ván Victory đầy đủ và một ván Game Over, thứ tự leaderboard, kích thước và kích hoạt Máy cắt cỏ, đòn tấn công của Squash, vết bắn của đậu, Imp bị ném.
+
+**Hạn chế đã biết**
+- **Nền tảng:** chỉ Windows x86_64 và thư viện *debug* được build và kiểm thử; không có bản export/release. Các hệ điều hành khác chưa được kiểm tra.
+- **Âm thanh:** âm thanh được xác minh qua trạng thái phát và signal của game (một kênh bắt đầu và dừng đúng lúc, không trùng lặp), không phải bằng cách nghe; mức âm lượng chỉ là ước lượng. Âm báo Squash là đoạn ngắn 0,4 giây phát khi zombie tiến lại gần, nên có thể kết thúc trước khi một zombie chậm tới tầm nhảy.
+- **Leaderboard:** chỉ tồn tại khi ứng dụng đang chạy (theo thiết kế); đóng game sẽ xoá nó. Tên đã có mục bị từ chối trong suốt phần còn lại của phiên chạy, kể cả sau Back; chỉ Restart mới dùng lại được. Thoát qua Pause -> Quit trước khi trận kết thúc không tạo mục nào, nên tên đó vẫn còn trống. Mục lưu kết quả *mới nhất* trong các lần chơi lại của người chơi (lần chơi lại tệ hơn sẽ thay thế lần tốt hơn).
+- **Hình ảnh:** tay và chân của Imp là các hình vẽ đơn giản, mảnh; Wall-nut không có hình tham chiếu HD; chữ trên các nút Next / Back / Leaderboard là pixel art vẽ lại, hơi mảnh hơn chữ QUIT gốc; trạng thái hover / pressed chỉ là đổi sắc vì sheet chỉ có một trạng thái.
+- **Giấy phép tài nguyên chưa được xác minh** (xem I). Không phân phối lại gói này.
+- Gameplay được kiểm thử ở 1152 × 648 (kích thước cửa sổ của dự án); menu cũng được kiểm tra ở 960 × 540 và 1920 × 1080.
+- Bộ nhớ đệm import `.godot/` không được đóng gói; Godot dựng lại khi mở lần đầu.
+- GitHub Issues: khi gói này được chuẩn bị, GitHub API công khai báo **không có Issue nào** (mở hay đóng) cho repository `trnbngocc/Team-2-Plants-Vs-Zombies`, nên không có gì để cập nhật; các câu hỏi chưa giải quyết về nguồn / giấy phép tài nguyên ở mục I được theo dõi tại đây và nhóm nên mở chúng thành Issue (không có quyền truy cập GitHub để tạo).
+
+### K. Cách học dự án
 
 1. **Bắt đầu từ luật chơi trong C++.**
-   - Đọc `src/entity.hpp`, rồi `plant.hpp` và `zombie.hpp`, để thấy cây kế thừa.
+   - Đọc `src/entity.hpp`, rồi `plant.hpp` và `zombie.hpp`, để thấy cây phân cấp lớp.
    - Sau đó đọc `GameController::update_entities()` trong `src/game_controller.cpp`. Đây là một frame đầy đủ của trò chơi: Sun, wave, cập nhật thực thể, hành động của cây, va chạm, dọn dẹp, và cuối cùng là kiểm tra thắng/thua.
 2. **Theo dõi một cây.**
-   - `Peashooter::update()` đếm thời gian.
-   - `Peashooter::act()` hỏi `GameController::has_zombie_in_row()` rồi gọi `spawn_bullet()`.
-   - Đạn di chuyển trong `Bullet::update()`, và `resolve_bullet_collisions()` trừ sát thương.
-3. **Theo dõi một zombie:** `WaveManager::update()` sinh ra zombie, `Zombie::default_update()` cho nó đi hoặc ăn cây, và `Zombie::receive_damage()` trừ giáp trước.
+   - `Peashooter::update()` đếm ngược bộ hẹn giờ.
+   - `Peashooter::act()` hỏi `GameController::has_zombie_in_row()` và gọi `spawn_bullet()`.
+   - Đạn di chuyển trong `Bullet::update()`, và `resolve_bullet_collisions()` áp dụng sát thương.
+3. **Theo dõi một zombie:** `WaveManager::update()` sinh ra nó, `Zombie::default_update()` cho nó đi hoặc ăn cây, và `Zombie::receive_damage()` trừ giáp trước.
 4. **Sau đó là phần hiển thị.**
    - `main_game.gd` gọi `get_plants_data()`, `get_zombies_data()` và các hàm dữ liệu khác mỗi frame rồi vẽ kết quả.
    - Nó phản hồi signal của lõi để phát âm thanh, hoạt ảnh và thông báo.
    - Giao diện không bao giờ tự thay đổi Sun, máu hay luật chơi.
 5. **Thử nghiệm an toàn.**
-   - Làm trên nhánh riêng.
+   - Làm trên nhánh riêng của bạn.
    - Mỗi lần chỉ đổi một hằng số cân bằng (các giá trị `static constexpr` ở đầu mỗi lớp cây và trong `wave_manager.hpp`), build lại và quan sát.
-   - Chạy unit test trong `test/` (cách biên dịch ghi trong `test/stubs/game_controller.hpp`).
-   - Không sửa tay các file đã được tạo trong `assets/`; hãy chạy lại script tương ứng trong `tools/`.
+   - Chạy unit test trong `test/` (ghi chú biên dịch nằm trong `test/stubs/game_controller.hpp`).
+   - Không sửa tay các file sinh ra trong `assets/`; hãy chạy lại script tương ứng trong `tools/`.
 
-### I. Thành viên và đóng góp
+### L. Thành viên và ghi công
 
 - **Team 2:**
-  - **Lõi C++ & Kiến trúc hệ thống (Core):** trnbngocc
-  - **Phát triển Cây (Plants):** BunBo-0920
-  - **Phát triển Zombie:** lehoangthaovia-code
-  - **Giao diện & Hiển thị (UI - GDScript):** bolhouuu114
+  - **Kiến trúc lõi & Lõi game C++ (Core Architecture & C++ Game Core):** trnbngocc
+  - **Module Cây (Plant Modules):** BunBo-0920
+  - **Module Zombie (Zombie Modules):** lehoangthaovia-code
+  - **Giao diện & Hiển thị (UI & Presentation - GDScript):** bolhouuu114
 
-### J. Tuyên bố
+### M. Tuyên bố miễn trừ
 
-Repository này là dự án học tập phi thương mại của sinh viên. Nếu bạn có thắc mắc, vui lòng để lại issue.
+Repository này là dự án học tập phi thương mại của sinh viên. Nếu bạn có thắc mắc, vui lòng thoải mái mở một issue.
