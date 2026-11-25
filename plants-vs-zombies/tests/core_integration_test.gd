@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless integration test of the REAL C++ GameController (loaded from the built DLL).
+## Headless test of the C++ GameController (from the built DLL).
 ## Run:  Godot --headless --path plants-vs-zombies --script res://tests/core_integration_test.gd
 ## Exit code 0 = all checks passed.
 

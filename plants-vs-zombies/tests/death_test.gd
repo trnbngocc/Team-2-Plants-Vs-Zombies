@@ -4,8 +4,8 @@ extends SceneTree
 ##   was still on), Imp too; Lawn Mower kill: stronger throw to the right, an intact helmet stays on the head; Jalapeno
 ##   and Squash kills and the Gargantuar keep the plain fall; pause freezes the head; nothing is left behind afterwards;
 ##   the final zombie does not delay Victory.
-## Every section runs in a FRESH match: the core starts its waves by itself after ~40 s of its own clock, and a stray wave
-## zombie would pollute the counts.
+## Each section starts a new match, because the core starts waves by itself after ~40 s
+## and a wave zombie would mess up the counts.
 ## Run:  Godot --path plants-vs-zombies --windowed --resolution 1152x648 --script res://tests/death_test.gd -- <out_dir>
 
 const PEA := 0

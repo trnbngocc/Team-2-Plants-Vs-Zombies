@@ -1,18 +1,15 @@
 extends Node
-## session.gd - autoload "Session": the player's name and the leaderboard of THIS run of the application.
+## session.gd - autoload Session: player name + leaderboard for this run.
 ##
-## The leaderboard lives only in memory (`records`): nothing is written to or read from disk, so every launch starts
-## with an empty one and quitting discards it. It survives scene changes (menu <-> match <-> leaderboard) because
-## this autoload lives for the whole run.
+## The leaderboard is only kept in memory (`records`), nothing goes to disk, so it starts
+## empty every launch. It's an autoload so it survives scene changes.
 ##
-## ONE USERNAME = ONE LEADERBOARD ENTRY = ONE PLAYER SESSION:
-##   register a name (menu TICK) -> first match ends -> add_result() creates the entry (immediately, once per match)
-##   RESTART (post-match leaderboard) -> restart_match(): same name, a brand-new match; when it ends add_result()
-##                                    UPDATES that same entry with the latest result (never a second row)
-##   BACK                -> end_session(): back to the menu, the name stays registered (its entry stays on the board)
-##                          so nobody can start a new session with it; the next player needs a different name
-##   menu leaderboard    -> read-only view (view_mode = VIEW_MENU)
-##   menu Quit           -> the application exits; the records disappear with the process
+## One username = one leaderboard entry:
+##   TICK in menu -> first match ends -> add_result() creates the entry
+##   RESTART      -> restart_match(): same name, new match, add_result() updates the same entry
+##   BACK         -> end_session(): back to menu, name stays on the board so nobody else can use it
+##   menu leaderboard -> view only (VIEW_MENU)
+##   menu Quit        -> game closes, records are gone
 
 const MAX_NAME_LENGTH := 16
 
@@ -28,20 +25,19 @@ var view_mode := VIEW_NONE
 
 var username := ""               # the player of the current / last match
 var username_accepted := false   # true once the menu's TICK confirmed a valid username
-var records: Array = []          # one {username, score, won, id} per player, in the order the players first finished
+var records: Array = []          # one {username, score, won, id} per player
 var last_result := {}            # {username, score, won} of the match that just ended
 var last_id := -1                # id of the entry that match created or updated
-var _match_has_result := false   # this match already produced its record
+var _match_has_result := false   # already recorded this match
 
 
-## Trim whitespace at both ends. Everything else is kept as typed.
+## Trim spaces at both ends.
 static func normalize(raw: String) -> String:
 	return raw.strip_edges()
 
 
-## Validate a raw username. Returns {ok: bool, name: String, error: String}.
-## A name that already has an entry on the board is a duplicate, whoever asks (a replay uses restart_match(), which
-## never goes through here).
+## Check a username. Returns {ok, name, error}.
+## Names already on the board count as duplicates (replays use restart_match() instead).
 func validate_username(raw: String) -> Dictionary:
 	var name := normalize(raw)
 	if name.is_empty():
@@ -62,7 +58,7 @@ func username_exists(name: String) -> bool:
 	return false
 
 
-## Menu TICK: the username was validated; keep it for this session.
+## TICK: name is valid, keep it.
 func accept_username(name: String) -> void:
 	username = normalize(name)
 	username_accepted = true
@@ -72,7 +68,7 @@ func clear_accepted() -> void:
 	username_accepted = false
 
 
-## Start a new player's first match from the main menu. Earlier entries stay on the leaderboard.
+## New player's first match from the menu.
 func begin_match(name: String) -> void:
 	username = normalize(name)
 	_match_has_result = false
@@ -81,7 +77,7 @@ func begin_match(name: String) -> void:
 	view_mode = VIEW_NONE
 
 
-## RESTART: the same player replays. Same username, a fresh match; its result updates the player's existing entry.
+## RESTART: same player plays again, result updates their entry.
 func restart_match() -> void:
 	_match_has_result = false
 	last_result = {}
@@ -89,7 +85,7 @@ func restart_match() -> void:
 	view_mode = VIEW_NONE
 
 
-## BACK to the menu: the player's session is over. Their entry stays on the board, which keeps the name taken.
+## BACK: session over. Entry stays on the board so the name is still taken.
 func end_session() -> void:
 	username = ""
 	username_accepted = false
@@ -99,13 +95,13 @@ func end_session() -> void:
 	view_mode = VIEW_NONE
 
 
-## Score rules: Victory = Sun actually spent in the match; Defeat = 0.
+## Score: win = Sun spent in the match, loss = 0.
 static func score_for(won: bool, sun_spent: int) -> int:
 	return maxi(sun_spent, 0) if won else 0
 
 
-## The match is over: record it. Once per match; true only for the call that stored it. The first match of a player
-## creates their entry; later matches (after RESTART) replace that entry's result with the latest one.
+## Match ended: save the result (once per match, returns true if it was saved).
+## First match adds a new entry, later ones (after RESTART) overwrite it.
 func add_result(won: bool, sun_spent: int) -> bool:
 	if _match_has_result:
 		return false
@@ -119,14 +115,13 @@ func add_result(won: bool, sun_spent: int) -> bool:
 			last_id = int(r["id"])
 			return true
 	var rec := last_result.duplicate()
-	rec["id"] = records.size()      # insertion order (ties); identifies the row for highlighting
+	rec["id"] = records.size()      # insert order, used for ties and highlighting
 	records.append(rec)
 	last_id = int(rec["id"])
 	return true
 
 
-## Leaderboard order: every Victory above every Defeat; among Victories the lower
-## Sun spent ranks higher; ties keep the order they were recorded in.
+## Sort: wins first, less Sun spent ranks higher, ties keep insert order.
 func sorted_records() -> Array:
 	var rows: Array = []
 	for i in records.size():

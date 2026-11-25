@@ -1,12 +1,9 @@
 extends Node
-## audio.gd - autoload "Audio": the ONE place that plays music and sound effects.
+## Audio autoload: plays music and sound effects.
 ##
-## Lives for the whole session (survives scene changes / Play Again), so there is
-## never more than one music player. Scenes only call the functions below; they
-## never create their own AudioStreamPlayers.
+## Stays alive across scene changes, so there's only ever one music player.
 ##
-## Several supplied clips start with up to ~1.2 s of silence; START trims that at
-## playback time (the files themselves are untouched).
+## Some clips have up to ~1.2 s of silence at the start, START skips it.
 
 const MUSIC := {
 	"menu": "res://assets/audio/menu.ogg",                # converted from menu.m4a
@@ -21,25 +18,24 @@ const SFX := {
 	"win": "res://assets/audio/win.mp3",
 	"lose": "res://assets/audio/lose.mp3",
 	"eating": "res://assets/audio/zombie_eating.mp3",
-	"squash": "res://assets/audio/squash.mp3",              # Squash notices a zombie (preparation cue)
+	"squash": "res://assets/audio/squash.mp3",              # Squash spots a zombie
 	"mower": "res://assets/audio/lawn_mower.mp3",           # Lawn Mower running
 	"gargantuar_death": "res://assets/audio/gargantuar_death.mp3",
 	"start": "res://assets/audio/plants-vs-zombies-ready-set-plant.mp3",   # Start Text "Ready, Set, Plant!"
 }
-# Sound for a successful plant placement (supplied as planting.mp3; 0.8 s, audible
-# from 0.00 s). The first of these files that exists is used.
+# Plant placed sound. Uses the first file that exists.
 const PLANTING_CANDIDATES := [
 	"res://assets/audio/planting.wav",
 	"res://assets/audio/planting.ogg",
 	"res://assets/audio/planting.mp3",
 ]
-# Measured start of the audible part of each clip, in seconds.
+# Where each clip actually starts making sound (seconds).
 const START := {
 	"click": 0.72, "pea_hit": 0.89, "sun": 0.03, "jalapeno": 0.13, "incoming": 1.10,
 	"win": 0.13, "lose": 0.37, "eating": 1.20, "planting": 0.0, "squash": 0.12, "mower": 0.6,
 }
 const SFX_VOICES := 8
-# Per-source volume (dB) of the "tracked" effects: one voice per source (a mower, a Squash), see play_tracked().
+# Volume (dB) for the tracked effects, see play_tracked().
 const TRACKED_DB := {"squash": -2.0, "mower": -6.0}
 
 var _music: AudioStreamPlayer
@@ -49,7 +45,7 @@ var _voices: Array[AudioStreamPlayer] = []
 var _voice_sfx := {}   # voice -> name of the clip it is playing
 var _streams := {}
 var _paused := false
-var _tracked := {}      # key -> AudioStreamPlayer of an effect that follows one object (mower row, Squash cell)
+var _tracked := {}      # key -> player for sounds tied to one object (mower row, Squash cell)
 
 
 func _ready() -> void:
@@ -73,11 +69,9 @@ func _notification(what: int) -> void:
 		quit_game()
 
 
-## Exit the application cleanly: the audio server removes stopped streams on its
-## own thread, so stop everything and give it a moment before quitting
-## (quitting mid-playback leaks the playback objects at shutdown).
-## The click that triggered the quit is allowed to finish first.
-var suppress_quit := false      # tests: do everything quit_game() does except ending the process
+## Quit cleanly: stop all audio and wait a bit before quitting,
+## otherwise Godot leaks the playback objects on exit.
+var suppress_quit := false      # tests: do everything except actually quitting
 var quit_requests := 0
 
 
@@ -122,8 +116,7 @@ func _stream(path: String, loop: bool) -> AudioStream:
 	return s
 
 
-## Start a music track (looping). Calling it again for the track that is
-## already playing does nothing, so it never restarts or doubles up.
+## Play a looping music track. Does nothing if it's already playing.
 func play_music(track: String) -> void:
 	if _music_name == track and _music.playing:
 		return
@@ -150,7 +143,7 @@ func _sfx_path(name: String) -> String:
 		for p in PLANTING_CANDIDATES:
 			if ResourceLoader.exists(p):
 				return p
-		return PLANTING_CANDIDATES[0]   # missing -> _stream() warns once, plays nothing
+		return PLANTING_CANDIDATES[0]   # file missing -> _stream() warns once
 	return SFX.get(name, "")
 
 
@@ -172,9 +165,8 @@ func play_sfx(name: String) -> void:
 	voice.play(START.get(name, 0.0))
 
 
-## An effect that belongs to ONE object (a running mower, a Squash that noticed a zombie). Starting it again for the
-## same key restarts that key's voice instead of stacking a second one, and the voice is released when the clip ends
-## or stop_tracked() is called.
+## Sound tied to one object (a mower, a Squash). Same key restarts it instead of
+## playing a second copy. Freed when the clip ends or on stop_tracked().
 func play_tracked(key: String, name: String) -> void:
 	var s := _stream(_sfx_path(name), false)
 	if s == null:
@@ -229,7 +221,7 @@ func _release_tracked(key: String, p: AudioStreamPlayer) -> void:
 		p.queue_free()
 
 
-## Continuous eating loop while at least one zombie is eating; not restarted per frame.
+## Eating loop, plays while any zombie is eating.
 func set_eating(active: bool) -> void:
 	if active and not _eating.playing:
 		var s := _stream(SFX["eating"], true)
@@ -242,7 +234,7 @@ func set_eating(active: bool) -> void:
 		_eating.stop()
 
 
-## Pause / resume the gameplay audio (music keeps its exact position).
+## Pause / resume gameplay sounds (music keeps its position).
 func set_gameplay_paused(paused: bool) -> void:
 	_paused = paused
 	_music.stream_paused = paused
@@ -255,8 +247,8 @@ func set_gameplay_paused(paused: bool) -> void:
 			p.stream_paused = paused
 
 
-## Leaving gameplay (quit to menu, victory, defeat): silence everything gameplay-related.
-## A UI click that is still sounding is left alone (it belongs to the button just pressed).
+## Leaving the match: stop all gameplay sounds.
+## Don't cut off the button click that's still playing.
 func stop_gameplay_audio() -> void:
 	_paused = false
 	stop_music()

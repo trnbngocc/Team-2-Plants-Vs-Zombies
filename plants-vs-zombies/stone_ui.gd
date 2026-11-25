@@ -1,9 +1,8 @@
 class_name StoneUI
 extends RefCounted
-## stone_ui.gd - Godot-built UI controls in the palette of the supplied stone buttons
-## (stone_button.gd / stone_title.gd). Used where no button artwork exists: the
-## Next / Play Again / Quit buttons of the result screens and leaderboard, and the
-## username box in the main menu.
+## stone_ui.gd - UI controls styled like the stone buttons, for places that
+## don't have button images: Next / Play Again / Quit on the result screens and
+## leaderboard, and the username box.
 
 const FACE := Color("9fbbd0")
 const HIGHLIGHT := Color("b8daf5")
@@ -47,7 +46,7 @@ static func make_button(text: String, min_size := Vector2(210, 68), font_size :=
 	return b
 
 
-## An image button from the supplied stone artwork (assets/ui/buttons/<name>.png), shown at `size` (aspect kept).
+## Image button from assets/ui/buttons/<name>.png, shown at `size` (keeps aspect).
 static func make_image_button(name: String, size: Vector2) -> TextureButton:
 	var b := TextureButton.new()
 	b.set_script(load("res://stone_button.gd"))

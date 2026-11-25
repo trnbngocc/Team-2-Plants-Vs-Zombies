@@ -1,11 +1,9 @@
 class_name JalapenoFire
 extends Node2D
-## jalapeno_fire.gd - visual-only row of fire for the Jalapeno explosion.
+## jalapeno_fire.gd - fire across the row when a Jalapeno explodes.
 ##
-## Created by main_game.gd when GameController emits "jalapeno_exploded" (the real
-## explosion, after the existing 2 s fuse). Damage, targeting and timing all stay
-## in C++; this only draws: the blaze bursts from the jalapeno, races to both ends of
-## the row, burns for a moment, then dies down into smoke and frees itself.
+## Spawned by main_game.gd on the jalapeno_exploded signal. Damage is done in C++,
+## this just draws the flames spreading out, burning, then turning into smoke.
 
 const SPREAD_TIME := 0.35
 const BURN_TIME := 0.45

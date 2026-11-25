@@ -1,11 +1,10 @@
 @tool
 class_name StoneTitle
 extends Control
-## stone_title.gd - big pixel-block title ("VICTORY", "GAME OVER", "PAUSED")
-## drawn in the visual language of the supplied stone buttons:
-## pale stone face, a lighter top edge, a thick darker bottom slab and a dark
-## navy outline, built from square "pixels" like the buttons' lettering.
-## Colours are sampled from assets/ui/buttons/*.png.
+## stone_title.gd - big blocky title text (VICTORY, GAME OVER, PAUSED)
+## styled like the stone buttons: light face, lighter top edge, dark bottom,
+## navy outline, made from square pixels.
+## Colours picked from assets/ui/buttons/*.png.
 
 const FACE := Color("9fbbd0")
 const HIGHLIGHT := Color("b8daf5")

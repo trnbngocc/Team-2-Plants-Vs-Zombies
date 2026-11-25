@@ -1,10 +1,8 @@
 extends Control
-## board.gd - đặt bãi cỏ (Field = ảnh lawn + 45 ô bấm) vừa khung bên dưới HUD.
+## board.gd - căn bãi cỏ (ảnh lawn + 45 ô) vừa phần dưới HUD.
 ##
-## Field được thiết kế ở toạ độ tham chiếu (bố cục 1152x648 cũ) và chỉ được
-## phóng to/thu nhỏ ĐỀU (cùng tỉ lệ ngang/dọc), nên 45 ô luôn khớp với ô vẽ
-## trên ảnh. main_game.gd chép cùng transform này cho lớp vẽ cây/zombie/đạn.
-## Chỉ là hiển thị: không đụng tới gameplay.
+## Field làm theo kích thước cũ 1152x648, chỉ scale đều hai chiều nên ô bấm
+## luôn khớp với ảnh. main_game.gd dùng lại transform này để vẽ cây/zombie.
 
 const HUD_HEIGHT := 96.0     # thanh seed bank ở trên cùng
 const KEEP_LEFT := 110.0     # phần sân/nhà giữ lại bên trái bãi cỏ (toạ độ tham chiếu)
@@ -23,7 +21,7 @@ func _relayout() -> void:
 	var view := get_viewport_rect().size
 	var lawn_pos := grid.position
 	var lawn_size := grid.get_combined_minimum_size()
-	# Lớn nhất có thể mà bãi cỏ vẫn nằm trọn dưới HUD và đủ chỗ hai bên
+	# Scale lớn nhất mà bãi cỏ vẫn nằm gọn dưới HUD, chừa chỗ hai bên
 	var k := minf((view.y - HUD_HEIGHT) / lawn_size.y,
 			view.x / (KEEP_LEFT + lawn_size.x + KEEP_RIGHT))
 	# Ưu tiên sát phải (Zombie vào từ phải, nhà bên trái), nhưng không để
