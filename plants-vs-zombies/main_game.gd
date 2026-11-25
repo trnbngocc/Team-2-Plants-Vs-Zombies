@@ -1,21 +1,21 @@
 extends Control
-## main_game.gd - script UI của Quyên, gắn vào Node GỐC của MainGame.tscn.
+## main_game.gd - script UI, gắn vào Node GỐC của MainGame.tscn.
 ##
-## NGUYÊN TẮC (theo yêu cầu của Ngọc):
+## NGUYÊN TẮC:
 ##  - UI chỉ HIỂN THỊ dữ liệu lấy từ Core và GỌI hàm của GameController.
 ##  - KHÔNG tự tính Sun, sát thương, va chạm, thắng/thua trong file này.
 ##  - Hàm nào Core chưa có thì UI chỉ in cảnh báo, không tự tạo dữ liệu giả.
 
 const DEBUG_LOG := true
 
-# --- Mã số cây (theo tài liệu của Ngọc) ---
+# --- Mã số cây ---
 const PLANT_PEASHOOTER := 0
 const PLANT_SUNFLOWER := 1
 const PLANT_WALLNUT := 2
 const PLANT_JALAPENO := 3
 const PLANT_SQUASH := 4
 
-# --- Trạng thái game (theo tài liệu của Ngọc) ---
+# --- Trạng thái game ---
 const STATE_SETUP := 0
 const STATE_PLAYING := 1
 const STATE_PAUSED := 2
@@ -24,7 +24,7 @@ const STATE_DEFEAT := 4
 
 const BOARD_COLS := 9
 
-# Tên Node của thẻ cây (viết thường, bỏ khoảng trắng và gạch dưới) -> mã số cây
+# Tên Node của thẻ cây -> mã số cây
 const CARD_NAME_TO_TYPE := {
 	"peashooter": PLANT_PEASHOOTER,
 	"sunflower": PLANT_SUNFLOWER,
@@ -1451,14 +1451,19 @@ func _build_seed_packets() -> void:
 		name_label.text = PLANT_NAMES.get(t, "")
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		name_label.position = Vector2(-3, 43)
-		name_label.size = Vector2(SEED_PACKET_SIZE.x + 6, 12)
 		name_label.clip_text = false
 		name_label.add_theme_font_size_override("font_size", 8 if String(name_label.text).length() <= 8 else 7)
 		name_label.add_theme_color_override("font_color", Color.WHITE)
 		name_label.add_theme_color_override("font_outline_color", Color("1f3a12"))
 		name_label.add_theme_constant_override("outline_size", 4)
 		b.add_child(name_label)
+		# Set the box only after the font override and parenting: if size is set first, Godot clamps
+		# it to the minimum size at the default 16px font, which widens long names (Sunflower,
+		# Peashooter) to the right and pushes the centered text off the card centre.
+		# x = -2 (not -3): the font's glyph bearings + outline render the ink ~0.5-1 px left of the
+		# box centre; this +1 px nudge was measured from screenshots to centre the ink on the card.
+		name_label.position = Vector2(-2, 43)
+		name_label.size = Vector2(SEED_PACKET_SIZE.x + 6, 12)
 
 		var cost_label := Label.new()
 		cost_label.name = "Cost"
