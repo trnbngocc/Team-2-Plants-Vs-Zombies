@@ -1,10 +1,9 @@
 class_name StoneButton
 extends TextureButton
-## stone_button.gd - a UI button using one of the extracted stone button images.
+## stone_button.gd - button using one of the stone button images.
 ##
-## The supplied artwork has a single state, so hover / press feedback is only a
-## tint (the image itself is untouched). Every press plays the click sound exactly
-## once: the sound is connected here, once, and nowhere else.
+## The image only has one state so hover / press is just a tint.
+## Click sound is connected here so it plays once per press.
 
 const HOVER_TINT := Color(1.12, 1.12, 1.15)
 const PRESS_TINT := Color(0.82, 0.86, 0.9)

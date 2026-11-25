@@ -1,7 +1,7 @@
 extends SceneTree
-## One user-flow scenario per process (so a REAL application quit can be observed
-## by tools/run_scenarios.ps1). Input is injected through Godot's input system (real mouse clicks on the
-## on-screen buttons, real keyboard events), not by calling the handlers.
+## Runs one user-flow scenario per process (so tools/run_scenarios.ps1 can check the app really quits).
+## Input goes through Godot's input system (mouse clicks on buttons, key events),
+## not by calling the handlers directly.
 ##
 ## Run:  Godot --path plants-vs-zombies --windowed --resolution 1152x648 --script res://tests/scenario.gd -- <mode> <out_dir>
 ## The leaderboard is in memory only; each mode is a fresh process seeded with Alice (Victory 450) and Bob (Defeat).
@@ -42,7 +42,7 @@ func shot(name: String) -> void:
 	root.get_viewport().get_texture().get_image().save_png(out_dir.path_join("%s_%s.png" % [mode, name]))
 
 
-## A genuine mouse click at the centre of an on-screen control.
+## Mouse click at the centre of a control.
 func click(c) -> void:
 	if c == null or not is_instance_valid(c):
 		return                      # the scene already changed: a repeated click has nothing left to hit
@@ -95,7 +95,7 @@ func finish() -> void:
 
 
 
-# An old user://leaderboard.json from earlier versions is never read or written any more: its timestamp must not change.
+# The old user://leaderboard.json shouldn't be touched anymore (timestamp stays the same).
 const OLD_FILE := "user://leaderboard.json"
 var _old_mtime := 0
 
@@ -286,8 +286,8 @@ func hero_entries(session: Node) -> Array:
 	return found
 
 
-# Register Hero, play one match per entry of `kinds`, RESTARTing between them. The leaderboard must keep exactly ONE
-# Hero entry, holding the latest result. Then BACK ends the session: "Hero" is taken, another name is accepted.
+# Register Hero and play a match for each entry in `kinds`, RESTART in between. There should be only one
+# Hero entry with the latest result. Then BACK: "Hero" is taken, a different name works.
 func scenario_match(kinds: Array) -> void:
 	var session: Node = root.get_node("Session")
 	var seed_count: int = session.records.size()

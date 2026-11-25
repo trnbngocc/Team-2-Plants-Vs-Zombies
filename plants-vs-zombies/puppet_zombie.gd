@@ -1,16 +1,15 @@
 class_name PuppetZombie
 extends Node2D
-## puppet_zombie.gd - cut-out ("skeletal") rigs for every zombie, built from the HD character art in
-## assets/characters/ (cut out of assets/references/original_pvz by tools/character_art/*.py).
+## puppet_zombie.gd - cut-out rigs for all zombies, using the HD art in
+## assets/characters/ (cut by tools/character_art/*.py).
 ##
 ##   Regular / Conehead / Buckethead   zombie/{head,body,feet}.png + cone_N / bucket_N accessories (N = damage state)
 ##   Gargantuar                        gargantuar/{feet,body,head,pole,hand,grip,imp_rider}.png
 ##   Imp                               imp/{upper,leg,shoe}.png
 ##
-## Each part sits at its position inside the original full-size picture, so with every joint at rest the
-## character looks exactly like the reference. Joints are Node2D pivots (hips, neck, pole grip ...); the
-## procedural animations below only rotate / nudge parts about those pivots by small amounts.
-## Nothing here changes gameplay: position, HP, armor and state all come from the C++ core via ZombieView.
+## Each part is placed where it is in the full image, so at rest it looks like the original picture.
+## Joints are Node2D pivots (hips, neck, pole grip...), the animations just rotate / move them a bit.
+## Position, HP, armor and state come from the C++ core through ZombieView.
 
 signal death_finished
 signal imp_released          # the Gargantuar let go of the Imp (ZombieView starts the Imp's flight)
@@ -35,7 +34,7 @@ const Z_ARMOR_SEAT := {   # accessory top-left in the same coordinates; armor co
 	1: Vector2(-14.0, -134.0),
 	2: Vector2(-20.0, -64.5),
 }
-const Z_ARMOR_SCALE := {1: 1.3, 2: 1.0}   # the cone art is scaled up to the regular zombie's head (reference proportions)
+const Z_ARMOR_SCALE := {1: 1.3, 2: 1.0}   # scale the cone up to fit the regular zombie head
 const ARMOR_NAMES := {1: "cone", 2: "bucket"}
 
 # ---- Gargantuar (pixels of the 0.6x Gargantuar picture, 350 x 345) ----
@@ -331,8 +330,8 @@ func set_paused(paused: bool) -> void:
 
 
 ## Play the death motion once, then emit death_finished.
-## cause: "" ordinary damage (the head is knocked off), "mower" (a stronger throw to the right), "burn" (Jalapeno) and
-## "squash" keep the plain slump. The Gargantuar never loses its head. Everything is a scripted tween, display only.
+## cause: "" = normal (head pops off), "mower" = thrown harder to the right, "burn" / "squash" =
+## just slump. Gargantuar never loses its head. All tweens, visual only.
 func die(cause := "") -> void:
 	if _dying:
 		return
@@ -366,7 +365,7 @@ func die(cause := "") -> void:
 
 
 # ---- death with the head knocked off (ordinary kills and Lawn Mower kills) ----
-# Lawn-pixel figures for a regular zombie (the Imp uses IMP_POP_SCALE of them). All motion is a fixed tween.
+# Numbers in lawn pixels for a normal zombie (Imp uses IMP_POP_SCALE).
 const POP_PEAK := 90.0            # how high the head rises above where it was
 const POP_SIDE := 44.0            # distance it travels forward (the direction the body falls)
 const POP_SIDE_MOWER := 150.0     # ... when a Lawn Mower hit it: thrown in the mower's direction (to the right)

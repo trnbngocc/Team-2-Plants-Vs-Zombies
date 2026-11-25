@@ -1,13 +1,11 @@
 class_name PeashooterView
 extends Node2D
-## peashooter_view.gd - Peashooter assembled from the supplied part images.
+## peashooter_view.gd - Peashooter built from separate part images.
 ##
-## Parts and their assembled positions come from tools/peashooter/build_peashooter.py
-## (assets/plants/peashooter/parts/*.png + peashooter_layout.gd). Only presentation:
-##   idle  - gentle head sway / bob, crest and leaf flutter, eye blink
-##   shoot - head recoil + flared mouth tube; started by play_shoot(), which the UI
-##           calls on GameController's "projectile_fired" signal (the real shot).
-## The node origin is the plant's feet.
+## Part positions come from tools/peashooter/build_peashooter.py (peashooter_layout.gd).
+##   idle  - head sway / bob, leaves move, blinks
+##   shoot - head recoil + mouth tube, play_shoot() is called on projectile_fired
+## Origin is at the plant's feet.
 
 const Layout := preload("res://assets/plants/peashooter/peashooter_layout.gd")
 const PARTS_DIR := "res://assets/plants/peashooter/parts/"
@@ -32,8 +30,8 @@ func _init() -> void:
 	scale = Vector2.ONE * DRAW_SCALE
 	_t = randf() * 10.0               # neighbours do not sway in sync
 	_next_blink = randf_range(1.5, 4.0)
-	# Layering by child order only (Layout.PARTS is sorted by depth); no z_index,
-	# so zombies keep drawing over plants exactly as before.
+	# Draw order comes from child order (Layout.PARTS is sorted), no z_index
+	# so zombies still draw over the plant.
 	_head = Node2D.new()
 	_head.position = NECK - Layout.FEET
 	for part in Layout.PARTS:
@@ -96,7 +94,7 @@ func _process(delta: float) -> void:
 	_sprites["leaf_left"].rotation = deg_to_rad(sin(_t * 1.7) * 3.0)
 	_sprites["leaf_right"].rotation = deg_to_rad(-sin(_t * 1.7 + 0.5) * 3.0)
 	_sprites["leaf_pair"].scale = Vector2(1.0, 1.0 + sin(_t * 2.1) * 0.025)
-	# blink with the supplied closed-eye piece
+	# blink using the closed-eye sprite
 	if _blink_left > 0.0:
 		_blink_left -= delta
 		if _blink_left <= 0.0:

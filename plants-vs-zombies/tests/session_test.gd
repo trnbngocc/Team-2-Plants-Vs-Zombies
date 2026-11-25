@@ -69,7 +69,7 @@ func _run() -> void:
 	check(s.records.size() == 2 and s.records[1]["username"] == "Bob", "the next player gets their own entry")
 	check(s.records[0]["username"] == "Alice" and s.records[0]["score"] == 300, "Alice's entry was not touched")
 
-	# ---- sorting (rules unchanged) ----
+	# ---- sorting ----
 	s = fresh_session()
 	for e in [["Alice", true, 450], ["Bob", false, 999], ["Cara", true, 300], ["Dan", true, 700], ["Eve", false, 0], ["Finn", true, 300]]:
 		s.begin_match(e[0])
@@ -97,7 +97,7 @@ func _run() -> void:
 		order.append(r["username"])
 	check(order[0] == "Dan" and s.records.size() == 6, "an improved replay moves the same entry up (%s)" % [order])
 
-	# ---- nothing is read from or written to disk (an old user://leaderboard.json is left alone, unused) ----
+	# ---- nothing touches disk (old user://leaderboard.json is ignored) ----
 	var path := "user://leaderboard.json"
 	var mtime := FileAccess.get_modified_time(path) if FileAccess.file_exists(path) else 0
 	var s2 := fresh_session()

@@ -75,7 +75,7 @@ func _run() -> void:
 	ui.selected_plant_type = -1
 	ui._highlight_selected()
 
-	# ---- Shovel: held sprite follows the pointer; removes ONLY the clicked plant; empty cell does nothing ----
+	# ---- Shovel: held sprite follows the pointer, only removes the clicked plant, empty cell does nothing ----
 	core.add_sun(300)
 	core.place_plant(3, 6, 2)
 	core.place_plant(3, 7, 2)

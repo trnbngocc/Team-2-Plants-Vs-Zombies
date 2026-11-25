@@ -1,11 +1,10 @@
 class_name ZombieView
 extends Node2D
-## zombie_view.gd - the picture of ONE zombie on the lawn.
+## zombie_view.gd - draws one zombie on the lawn.
 ##
-## Display only: position, health, armor, eating / throwing all come from the C++ core
-## (get_zombies_data). The body is a PuppetZombie rig built from the supplied
-## Regular_Zombies.png / zombie_Gargantuar.png parts: Regular, Conehead (visible cone with
-## 3 damage states) and Buckethead (visible bucket, 3 damage states) are distinct looks.
+## Position, HP, armor, eating / throwing all come from the C++ core (get_zombies_data).
+## The body is a PuppetZombie rig. Regular, Conehead and Buckethead each have their own
+## look (cone / bucket with 3 damage states).
 
 const STATE_PLAYING := 1
 const STATE_PAUSED := 2
@@ -119,7 +118,7 @@ func apply_data(d: Dictionary) -> void:
 			health_bar.snap()
 
 	eating = bool(d.get("eating", false))
-	# ONE_ARM_LOST (visual_state 1): slightly darker so a weakened zombie is recognisable.
+	# ONE_ARM_LOST (visual_state 1): a bit darker so you can tell it's hurt.
 	modulate = Color(0.82, 0.86, 0.8) if int(d.get("visual_state", 0)) == 1 else Color.WHITE
 	_play_base()
 

@@ -1,15 +1,15 @@
 class_name PlantRig
 extends Node2D
-## plant_rig.gd - the picture and animation of ONE plant (display only; the C++ core owns every rule).
+## plant_rig.gd - sprite + animation for one plant (visual only, logic is in C++).
 ##
-## Art: the HD illustrations in assets/references/original_pvz cut into layers by tools/character_art
-## (assets/characters/{sunflower,peashooter,jalapeno,squash}/), plus the supplied Wall-nut sprite sheet.
+## Art: HD images cut into layers by tools/character_art (assets/characters/...),
+## plus the Wall-nut sprite sheet.
 ##   Sunflower   stem + head layers   -> idle sway, the head lags behind the stem
 ##   Peashooter  stem + head layers   -> idle sway, recoil when it fires
 ##   Wall-nut    3 damage sprites     -> idle breathing, blink, hit reaction
 ##   Jalapeno    one sprite           -> idle sway, the fuse makes it glow, pulse and shake
-##   Squash      frames of the original GIF -> idle, crouch + jump arc, (splat spawned by main_game)
-## The rig's origin is the point on the ground the plant stands on.
+##   Squash      GIF frames           -> idle, crouch + jump, (splat comes from main_game)
+## Origin = the ground point under the plant.
 
 const DIR := "res://assets/characters/"
 
@@ -220,7 +220,7 @@ func _process(delta: float) -> void:
 
 
 func _animate_jalapeno() -> void:
-	# The core's fuse is 2 s from planting; the rig counts the same time since it appeared.
+	# Core fuse is 2 s, the rig just counts the same time from when it appeared.
 	var k := clampf((_age - 0.8) / (JAL_FUSE - 0.8), 0.0, 1.0)
 	var rate := 1.6 + 11.0 * k * k
 	_sway.rotation = sin(_t * rate) * (0.025 + 0.035 * k)
@@ -263,7 +263,7 @@ func _animate_squash(delta: float) -> void:
 	_sprite.position = Vector2(x_off, 0) - SQ_GROUND
 
 
-## What is left after a Squash lands: the flattened Squash from the original animation, fading away.
+## Left over after Squash lands: squashed sprite that fades out.
 static func make_squash_splat() -> Node2D:
 	var root := Node2D.new()
 	var spr := Sprite2D.new()

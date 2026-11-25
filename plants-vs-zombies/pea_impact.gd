@@ -1,11 +1,10 @@
 class_name PeaImpact
 extends Node2D
-## pea_impact.gd - the green splat that appears where a Pea hits a zombie.
+## pea_impact.gd - green splat when a pea hits a zombie.
 ##
-## Frames come from the "Pea" block of assets/projectiles/Projectiles.png (extracted to
-## assets/projectiles/pea/): splat_1..3 are the splat growing, splat_4 is the flattened side splash and
-## dot_1..3 are the little droplets that fly off. The effect plays once (~0.4 s) and frees itself.
-## It is created only from the core's "projectile_hit" signal, i.e. on a real collision.
+## Frames from the Pea part of Projectiles.png (assets/projectiles/pea/): splat_1..3 grow,
+## splat_4 is the flat splash, dot_1..3 are droplets. Plays once (~0.4 s) then frees itself.
+## Only created from the projectile_hit signal.
 
 const DIR := "res://assets/projectiles/pea/"
 const FRAME_TIME := 0.055

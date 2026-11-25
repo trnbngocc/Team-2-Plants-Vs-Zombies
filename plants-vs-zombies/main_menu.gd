@@ -1,37 +1,34 @@
 extends Control
-## main_menu.gd - Main Menu: background, username box + TICK, PLAY, QUIT (image buttons) and LEADERBOARD (all image buttons).
+## main_menu.gd - main menu: username box + TICK, PLAY, QUIT, LEADERBOARD.
 ##
-## The three primary buttons use the supplied stone artwork (assets/ui/buttons/{tick,play,quit}.png):
-##   * TICK (round, beside the username box) confirms the name. Only a mouse click on it does: the box's
-##     text_submitted signal (keyboard Enter) is deliberately not connected, so Enter confirms nothing.
-##     Validation: trimmed, non-empty, at most Session.MAX_NAME_LENGTH, not on the leaderboard
-##     (case-insensitive; duplicate => exactly "Username already exists"). A valid name is stored in Session
-##     and a green "Username accepted" message is shown.
-##   * PLAY starts the game, but only once a name has been confirmed with TICK; otherwise it stays here and
-##     shows a message. Editing the name withdraws the confirmation.
-##   * QUIT closes the application without saving anything (it is not a finished match).
-## LEADERBOARD (image button, same family) opens the existing leaderboard screen read-only.
+##   * TICK checks the name. Only clicking it works, Enter does nothing.
+##     Name is trimmed, can't be empty, max Session.MAX_NAME_LENGTH and can't already be
+##     on the leaderboard (case-insensitive). If it's ok it gets saved in Session.
+##   * PLAY only works after the name is confirmed, otherwise it shows a message.
+##     Changing the name means you have to TICK again.
+##   * QUIT closes the game.
+##   * LEADERBOARD opens the leaderboard (view only).
 
 const GAME_SCENE := "res://scenes/main.tscn"
 const LEADERBOARD_SCENE := "res://scenes/leaderboard.tscn"
 
 const OK_COLOR := Color("1f7a2c")
 const ERR_COLOR := Color("d12a1f")
-const TICK_SIZE := Vector2(68, 65)         # keeps the 160:152 artwork proportions
+const TICK_SIZE := Vector2(68, 65)         # same ratio as the 160x152 image
 
 var name_edit: LineEdit
 var tick_button: TextureButton
 var play_button: TextureButton
 var quit_button: TextureButton
 var leaderboard_button: TextureButton
-var status_label: Label     # error ("Username already exists") or confirmation message
-var _busy := false          # leaving the menu: every button ignores further clicks
+var status_label: Label     # error or "accepted" message
+var _busy := false          # leaving the menu: ignore any more clicks
 
 
 func _ready() -> void:
 	Audio.stop_gameplay_audio()
 	Audio.play_music("menu")
-	Session.end_session()             # the menu means no player session is active
+	Session.end_session()             # no active player while in the menu
 	Session.view_mode = Session.VIEW_NONE
 	play_button = $Buttons/Play
 	quit_button = $Buttons/Quit
@@ -71,7 +68,7 @@ func _build_username_box() -> void:
 	name_edit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	StoneUI.style_line_edit(name_edit)
 	name_edit.text_changed.connect(_on_text_changed)
-	# NOTE: text_submitted (the keyboard Enter key) is intentionally NOT connected.
+	# Enter (text_submitted) isn't connected on purpose.
 	row.add_child(name_edit)
 
 	tick_button = StoneUI.make_image_button("tick", TICK_SIZE)
@@ -89,13 +86,13 @@ func _build_username_box() -> void:
 	name_edit.grab_focus.call_deferred()
 
 
-# LEADERBOARD: an image button of the same family, in the row next to PLAY and QUIT (it needs a wider face for its label).
+# LEADERBOARD button next to PLAY and QUIT (a bit wider for the text).
 func _build_leaderboard_button() -> void:
 	leaderboard_button = StoneUI.make_image_button("leaderboard", Vector2(184, 80))
 	leaderboard_button.pressed.connect(_on_leaderboard_pressed)
 	var buttons: Control = $Buttons
 	buttons.add_child(leaderboard_button)
-	buttons.offset_left = -300.0       # the row was laid out for PLAY + QUIT only
+	buttons.offset_left = -300.0       # row was originally just PLAY + QUIT
 	buttons.offset_right = 300.0
 
 
@@ -104,7 +101,7 @@ func _show_status(text: String, ok: bool) -> void:
 	status_label.add_theme_color_override("font_color", OK_COLOR if ok else ERR_COLOR)
 
 
-# PLAY looks dimmed until a username has been confirmed; it stays clickable so it can explain why it waits.
+# PLAY is dimmed until a name is confirmed, but still clickable so it can show why.
 func _refresh_play_state() -> void:
 	play_button.self_modulate = Color.WHITE if Session.username_accepted else StoneButton.DISABLED_TINT
 
@@ -119,7 +116,7 @@ func _on_text_changed(_t: String) -> void:
 	_refresh_play_state()
 
 
-## TICK: validate; if valid, accept + store the name and show the confirmation. Does NOT start the game.
+## TICK: check the name, save it and show a message if ok. Doesn't start the game.
 func _on_tick_pressed() -> void:
 	if _busy:
 		return
@@ -127,33 +124,33 @@ func _on_tick_pressed() -> void:
 	if not result["ok"]:
 		Session.clear_accepted()
 		StoneUI.style_line_edit(name_edit)
-		_show_status(result["error"], false)      # exactly "Username already exists" for a duplicate
+		_show_status(result["error"], false)      # "Username already exists" for duplicates
 		_refresh_play_state()
 		name_edit.grab_focus()
 		return
 	var accepted: String = result["name"]
 	Session.accept_username(accepted)
-	name_edit.text = accepted                     # show the trimmed name that was accepted
+	name_edit.text = accepted                     # show the trimmed name
 	StoneUI.style_line_edit(name_edit, true)
 	_show_status("Username accepted: " + accepted, true)
 	_refresh_play_state()
 
 
-## PLAY: starts the match, only with a name confirmed by TICK.
+## PLAY: start the match (needs a confirmed name).
 func _on_play_pressed() -> void:
 	if _busy:
 		return
 	if not Session.username_accepted:
 		_show_status("Confirm your username with the tick first", false)
 		return
-	_busy = true                                  # repeated clicks cannot start the game twice
+	_busy = true                                  # avoid starting twice on double click
 	_lock_buttons()
 	Session.begin_match(Session.username)
-	Audio.play_music("gameplay")   # starts with the 30 s preparation phase
+	Audio.play_music("gameplay")   # starts with the 30 s prep phase
 	get_tree().change_scene_to_file(GAME_SCENE)
 
 
-## LEADERBOARD: read-only view of the saved records.
+## LEADERBOARD: view only.
 func _on_leaderboard_pressed() -> void:
 	if _busy:
 		return
@@ -163,13 +160,13 @@ func _on_leaderboard_pressed() -> void:
 	get_tree().change_scene_to_file(LEADERBOARD_SCENE)
 
 
-## QUIT: close the whole application. Nothing is saved: the menu is not a finished match.
+## QUIT: close the game, nothing to save.
 func _on_quit_pressed() -> void:
 	if _busy:
 		return
 	_busy = true
 	_lock_buttons()
-	Audio.quit_game()   # lets the click finish, stops audio, then exits
+	Audio.quit_game()   # let the click finish, stop audio, then quit
 
 
 func _lock_buttons() -> void:

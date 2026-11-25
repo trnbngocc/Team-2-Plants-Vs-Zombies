@@ -1,7 +1,7 @@
 extends SceneTree
 ## Pea projectile + impact effect, in the running game (windowed).
 ##   1. a pea that MISSES (its target dies mid-flight) leaves no splat
-##   2. several peas hitting zombies in different rows each make exactly one splat, on the zombie, then it frees itself
+##   2. several peas hitting zombies in different rows make one splat each, on the zombie, then it frees itself
 ##   3. the traveling pea uses the extracted sprite, undistorted
 ## Run:  Godot --path plants-vs-zombies --windowed --resolution 1152x648 --script res://tests/projectile_test.gd -- <out_dir>
 

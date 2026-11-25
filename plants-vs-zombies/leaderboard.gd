@@ -1,16 +1,14 @@
 extends Control
-## leaderboard.gd - persistent local leaderboard + BACK.
+## leaderboard.gd - leaderboard screen.
 ##
-## Shows Username, Score and Result (Victory / Defeat) from Session.sorted_records() - this run's results, held in memory:
-## every Victory above every Defeat, lower Sun spent first among Victories.
-## Opening or leaving this screen only READS the records (the match result was added once when the match ended).
+## Shows Username / Score / Result from Session.sorted_records(). Wins first, then less Sun spent.
+## Only reads the records, they get saved when the match ends.
 ##
-## One screen, two entry modes (Session.view_mode):
-##   VIEW_MENU        opened from the main menu: BACK only (returns to the menu)
-##   VIEW_POST_MATCH  opened by NEXT after a finished match, the player's row highlighted:
-##                    RESTART replays with the same username (the same entry is updated),
-##                    BACK ends the player's session (Session.end_session) and returns to the menu.
-## Neither button creates a record; the entry was created / updated when the match ended.
+## Two modes (Session.view_mode):
+##   VIEW_MENU        from the main menu, only BACK
+##   VIEW_POST_MATCH  after a match (NEXT), player's row highlighted:
+##                    RESTART plays again with the same name,
+##                    BACK ends the session and goes back to the menu.
 
 const MENU_SCENE := "res://scenes/menu.tscn"
 const GAME_SCENE := "res://scenes/main.tscn"
@@ -164,16 +162,16 @@ func _lock() -> bool:
 	return true
 
 
-# RESTART (post-match only): the same player replays from scratch with the same username.
+# RESTART: same player, same name, new match.
 func _on_restart() -> void:
 	if not _lock():
 		return
 	Session.restart_match()
-	Audio.play_music("gameplay")     # starts with the 30 s preparation phase, like a first game
+	Audio.play_music("gameplay")     # starts with the 30 s prep phase
 	get_tree().change_scene_to_file(GAME_SCENE)
 
 
-# BACK (both views): return to the main menu. After a match this ends the player's session; their name stays taken.
+# BACK: back to the menu. After a match this also ends the session (name stays taken).
 func _on_back() -> void:
 	if not _lock():
 		return

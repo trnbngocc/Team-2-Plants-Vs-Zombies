@@ -1,10 +1,10 @@
 extends Control
-## main_game.gd - script UI, gắn vào Node GỐC của MainGame.tscn.
+## main_game.gd - script UI, gắn vào node gốc của MainGame.tscn.
 ##
-## NGUYÊN TẮC:
-##  - UI chỉ HIỂN THỊ dữ liệu lấy từ Core và GỌI hàm của GameController.
-##  - KHÔNG tự tính Sun, sát thương, va chạm, thắng/thua trong file này.
-##  - Hàm nào Core chưa có thì UI chỉ in cảnh báo, không tự tạo dữ liệu giả.
+## Lưu ý:
+##  - UI chỉ hiển thị dữ liệu từ Core và gọi hàm của GameController.
+##  - Không tính Sun, sát thương, va chạm, thắng/thua ở đây.
+##  - Core chưa có hàm nào thì chỉ in cảnh báo.
 
 const DEBUG_LOG := true
 
@@ -33,7 +33,7 @@ const CARD_NAME_TO_TYPE := {
 	"squash": PLANT_SQUASH,
 }
 
-# Seed Bank icons (small transparent copies of the HD art; see tools/character_art/build_all.py)
+# Seed Bank icons (small copies of the HD art, made by tools/character_art/build_all.py)
 const PLANT_ICONS := {
 	PLANT_PEASHOOTER: "res://assets/characters/icons/peashooter.png",
 	PLANT_SUNFLOWER: "res://assets/characters/icons/sunflower.png",
@@ -41,16 +41,14 @@ const PLANT_ICONS := {
 	PLANT_JALAPENO: "res://assets/characters/icons/jalapeno.png",
 	PLANT_SQUASH: "res://assets/characters/icons/squash.png",
 }
-# Plants stand on the ground this far below the cell centre; the plant view is 72x72 with the centre at 36.
+# Plants are drawn a bit below the cell centre so they stand on the grass (view is 72x72, centre 36).
 const PLANT_GROUND_Y := 66.0
 
-# Lawn mower: cắt thân máy cắt cỏ từ sprite sheet lawn_mover_all.png
-# Lawn mower: body + engine + two wheels, cut from assets/env/lawn_mower/lawn_mover_all.png (tools/character_art/mower_parts.py).
-# Positions are pixels of the assembled 130x110 picture; the wheels spin as the mower rolls.
+# Lawn mower = body + engine + 2 wheels, cut from lawn_mover_all.png (tools/character_art/mower_parts.py).
+# Positions are in pixels of the 130x110 assembled image. Wheels spin while it moves.
 const MOWER_DIR := "res://assets/characters/mower/"
-# Size from assets/references/original_pvz/full_lawn_grid_mower.jpg: the mower is ~0.86 of a cell wide and ~0.58 of a row
-# tall (70 x 59 px on an 82 x 101 px cell), its wheels rest ~4 px above the row's lower edge and its front touches the
-# lawn's left edge. In this 87 x 110 cell that is ~75 x 64 px: scale 0.75 of the 100 x 82 px rig. Display only.
+# Size eyeballed from the reference screenshot: about 0.86 cell wide and 0.58 row tall,
+# wheels a few px above the bottom of the row. Here that's ~75x64 px -> scale 0.75.
 const MOWER_SCALE := 0.75
 const MOWER_DRAW_OFFSET := Vector2(-20, 59)     # from the core's (row, column) point to the rig's ground point
 const MOWER_BODY_POS := Vector2(10, 6)
@@ -59,17 +57,17 @@ const MOWER_WHEEL_BACK := Vector2(35, 75)       # wheel centres
 const MOWER_WHEEL_FRONT := Vector2(81, 73)
 const MOWER_GROUND := Vector2(58, 100)          # the point of the rig that sits on the lawn
 const MOWER_WHEEL_SPIN := 12.0                  # radians of wheel rotation per lawn column travelled
-const SHOVEL_TEXTURE := "res://assets/env/shovel/Shovel.jpg"                 # the supplied shovel slot (HUD button)
+const SHOVEL_TEXTURE := "res://assets/env/shovel/Shovel.jpg"                 # shovel slot on the HUD
 const SHOVEL_HELD_TEXTURE := "res://assets/env/shovel/shovel_cutout.png"     # the shovel alone, follows the pointer
 const SHOVEL_HELD_SIZE := Vector2(64, 65)
-const SHOVEL_HELD_TIP := Vector2(0.06, 0.94)     # blade tip inside the picture (fraction): placed on the pointer
+const SHOVEL_HELD_TIP := Vector2(0.06, 0.94)     # blade tip position in the image (0..1), goes on the mouse
 
-# Start Text ("Ready... Set... PLANT!"): cắt ba dòng từ Start_Text.png (bỏ dòng chú thích trên cùng)
+# Start Text: cắt 3 dòng từ Start_Text.png (bỏ dòng trên cùng)
 const START_TEXT_TEXTURE := "res://assets/ui/Start_Text.png"
 const START_TEXT_REGIONS := [Rect2(8, 22, 296, 104), Rect2(70, 126, 175, 82), Rect2(4, 214, 302, 124)]
 const START_STEP := 0.75          # giây giữa hai dòng
 const START_END_HOLD := 0.8       # giữ dòng cuối trước khi bắt đầu wave
-const START_SAFETY_SECONDS := 4.5 # dù animation / âm thanh lỗi, wave vẫn bắt đầu
+const START_SAFETY_SECONDS := 4.5 # lỡ animation / âm thanh lỗi thì wave vẫn chạy
 
 # Rung màn hình khi Squash đập trúng
 const SHAKE_AMPLITUDE := 7.0
@@ -82,26 +80,25 @@ const SUN_TEXTURE := "res://assets/sưnn.png"
 const ZOMBIE_FEET_BEHIND_FRONT := 16.0
 const ZOMBIE_FEET_BELOW_CENTER := 0.36   # tỉ lệ chiều cao hàng
 
-# Peashooter ghép từ các mảnh: chân cây dưới tâm ô; đạn vẽ ngang miệng cây
-# The Pea from the "Pea" block of assets/projectiles/Projectiles.png (extracted to projectiles/pea/pea.png, 24x24).
+# Peashooter: chân cây dưới tâm ô, đạn bắn ra từ miệng
+# Pea sprite cut from Projectiles.png -> projectiles/pea/pea.png (24x24).
 const PROJECTILE_TEXTURE := "res://assets/projectiles/pea/pea.png"
-const PROJECTILE_SIZE := Vector2(30, 30)      # 24 px source drawn at 1.25x, proportions unchanged
+const PROJECTILE_SIZE := Vector2(30, 30)      # 24 px sprite drawn at 1.25x
 
 const MENU_SCENE := "res://scenes/menu.tscn"
-const IMPACT_FACE_OFFSET := 20.0   # how far in front of the zombie's feet point the splat lands (its face / chest)
+const IMPACT_FACE_OFFSET := 20.0   # splat a bit in front of the feet so it lands on the body
 const LEADERBOARD_SCENE := "res://scenes/leaderboard.tscn"
 const GAME_OVER_ART := "res://assets/ui/Game Over Screen.png"
 
 # Thông báo wave (cắt sẵn, mỗi ảnh là một dòng chữ riêng, không phải sprite sheet)
-# A_huge_wave_is_approaching.png has an opaque black background; the _transparent copy is the same
-# artwork with the black keyed out (the original file is left untouched).
-const HUGE_WAVE_TEXTURE := "res://assets/ui/huge_wave_text.png"      # tight, transparent crop of A_huge_wave_is_approaching.png
-const FINAL_WAVE_TEXTURE := "res://assets/ui/final_wave_text.png"    # lettering-only crop of final-wave.png
+# A_huge_wave_is_approaching.png has a black background, so we use a copy with the black removed.
+const HUGE_WAVE_TEXTURE := "res://assets/ui/huge_wave_text.png"      # transparent crop of A_huge_wave_is_approaching.png
+const FINAL_WAVE_TEXTURE := "res://assets/ui/final_wave_text.png"    # just the text from final-wave.png
 const HUGE_WAVE_SCALE := 1.9
 const FINAL_WAVE_SCALE := 3.7
-# Each banner has a time slot in the core's final-wave sequence (WaveManager::HUGE_WAVE_BANNER_SECONDS = 4.0,
-# FINAL_WAVE_BANNER_SECONDS = 3.0). in + hold + out must fit inside the slot so the banners never overlap
-# and the wave-4 zombies only start after the second one is gone.
+# Each banner has a time slot in the core (WaveManager: huge wave 4.0 s, final wave 3.0 s).
+# in + hold + out has to fit in the slot, otherwise the banners overlap
+# and wave 4 starts while one is still on screen.
 const BANNER_IN := 0.45
 const BANNER_OUT := 0.5
 const HUGE_WAVE_HOLD := 2.7
@@ -149,7 +146,7 @@ var card_buttons := {}
 var entity_layer: Control
 var board_field: Control
 
-var plant_views := {}    # "row,col" -> view (mỗi ô tối đa 1 cây)
+var plant_views := {}    # "row,col" -> view (mỗi ô 1 cây)
 var zombie_views := {}   # id Zombie (từ Core) -> ZombieView
 var bullet_views: Array = []
 var sun_views := {}
@@ -158,7 +155,7 @@ var _warned := {}
 var _dumped := {}
 var _tex_cache := {}
 var _last_state := -99
-var _zombie_warning_played := false   # "zombies are coming": đúng 1 lần mỗi ván (ván mới = scene mới)
+var _zombie_warning_played := false   # "zombies are coming": 1 lần mỗi ván
 var _leaving := false    # đã bấm Quit: không xử lý thêm lần nữa
 var _notice: VBoxContainer   # thông báo trồng cây đang hiện (tối đa một)
 var _notice_tween: Tween
@@ -182,7 +179,7 @@ var _boss_label: Label
 var _shovel_button: TextureButton
 var _held_shovel: TextureRect
 var _shovel_active := false
-var _intro_started := false   # Start Text chỉ chạy đúng một lần mỗi ván (pause / resume không chạy lại)
+var _intro_started := false   # Start Text chỉ chạy 1 lần mỗi ván (resume không chạy lại)
 var _waves_begun := false
 var _shake_tween: Tween
 var _shake_origin := Vector2.ZERO
@@ -196,7 +193,7 @@ func _ready() -> void:
 		push_error("[UI] Khong tim thay ../GameController. MainGame phai nam canh GameController trong main.tscn")
 		return
 
-	# Tìm Node theo TÊN (không dùng đường dẫn cứng nên không sợ sai cấu trúc scene)
+	# Tìm node theo tên cho đỡ phụ thuộc cấu trúc scene
 	sun_label = _find_in("sun_display", "Label") as Label
 	pause_button = _find_in("pause_button", "BaseButton") as BaseButton
 	win_screen = find_child("win_screen", true, false) as Control
@@ -220,7 +217,7 @@ func _ready() -> void:
 		_connect_named_button(pause_overlay, "Resume", _on_resume_pressed)
 		_connect_named_button(pause_overlay, "Quit", _on_pause_quit_pressed)
 
-	# Sự kiện chỉ để trình bày (âm thanh / hoạt ảnh), Core phát khi chúng thật sự xảy ra
+	# Mấy signal này chỉ dùng để phát âm thanh / animation
 	if game_controller.has_signal("projectile_fired"):
 		game_controller.projectile_fired.connect(_on_projectile_fired)
 	if game_controller.has_signal("projectile_hit"):
@@ -239,7 +236,7 @@ func _ready() -> void:
 		game_controller.squash_alert_cancelled.connect(_on_squash_alert_cancelled)
 	if game_controller.has_signal("mower_activated"):
 		game_controller.mower_activated.connect(_on_mower_activated)
-	Audio.stop_all_tracked()      # nothing from an earlier match may still be sounding
+	Audio.stop_all_tracked()      # stop anything left over from the last match
 	if game_controller.has_signal("plant_shoveled"):
 		game_controller.plant_shoveled.connect(_on_plant_shoveled)
 	if game_controller.has_signal("huge_wave_warning"):
@@ -251,12 +248,12 @@ func _ready() -> void:
 	if game_controller.has_signal("wave_started"):
 		game_controller.wave_started.connect(_on_wave_started)
 
-	# Nhạc nền duy nhất của trận: chạy từ lúc chuẩn bị, qua cả lúc vào trận (không khởi động lại)
+	# Nhạc nền trận: phát từ lúc chuẩn bị, không restart khi vào wave
 	Audio.play_music("gameplay")
 
 	# Lớp chứa cây/zombie/đạn/Sun: nằm trên Board, dưới HUD, không chặn chuột.
-	# Các lớp phủ Pause / Thắng / Thua ở OverlayLayer (CanvasLayer riêng, vẽ trên cùng),
-	# nên mọi thứ ở đây -- kể cả Zombie có z_index cao -- đều bị phủ tối đồng đều.
+	# Pause / Thắng / Thua nằm ở OverlayLayer (CanvasLayer riêng) nên
+	# mọi thứ ở đây, kể cả zombie có z_index cao, đều bị phủ tối.
 	entity_layer = Control.new()
 	entity_layer.name = "EntityLayer"
 	entity_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -305,9 +302,8 @@ func _process(_delta: float) -> void:
 
 # ====================== START TEXT ======================
 
-# "Ready... Set... PLANT!" + âm thanh, chạy đúng một lần. Core chỉ bắt đầu đếm
-# wave khi begin_waves() được gọi; timer an toàn bên dưới đảm bảo luôn được gọi
-# kể cả khi hình / âm thanh không nạp được.
+# "Ready... Set... PLANT!" + âm thanh. Core chỉ đếm wave sau khi gọi begin_waves(),
+# có timer dự phòng để vẫn gọi được nếu ảnh / âm thanh bị lỗi.
 func _start_intro() -> void:
 	if _intro_started:
 		return
@@ -440,7 +436,7 @@ func _connect_board_cells() -> void:
 # ====================== SỰ KIỆN NGƯỜI CHƠI ======================
 
 func _on_seed_card_pressed(plant_type: int) -> void:
-	# Chọn thẻ cây = bấm nút UI: luôn có tiếng click (kể cả khi chưa đủ Sun)
+	# Bấm thẻ cây luôn có tiếng click, kể cả khi thiếu Sun
 	Audio.play_sfx("click")
 	_set_shovel_active(false)
 	selected_plant_type = plant_type
@@ -449,7 +445,7 @@ func _on_seed_card_pressed(plant_type: int) -> void:
 
 
 func _on_cell_pressed(row: int, col: int) -> void:
-	# Xẻng đang chọn: chỉ gỡ cây ở đúng ô này (ô trống thì không làm gì), không trồng cây.
+	# Đang cầm xẻng: chỉ gỡ cây ở ô này, ô trống thì bỏ qua.
 	if _shovel_active:
 		var removed = _core("shovel_plant", [row, col])
 		if removed == true:
@@ -457,7 +453,7 @@ func _on_cell_pressed(row: int, col: int) -> void:
 		return
 	if selected_plant_type == -1:
 		return
-	# UI KHÔNG tự trừ Sun. Core xử lý và trả true/false.
+	# Sun do Core trừ, UI chỉ nhận true/false.
 	var ok = _core("place_plant", [row, col, selected_plant_type])
 	print("[UI] place_plant(", row, ", ", col, ", ", selected_plant_type, ") -> ", ok)
 	if ok == true:
@@ -485,7 +481,7 @@ func _on_pause_pressed() -> void:
 func _on_resume_pressed() -> void:
 	var s = _core("get_state")
 	if s != null and int(s) == STATE_PAUSED:
-		_core("resume_game")   # Core tiếp tục đúng trạng thái cũ (vị trí, máu, đạn, timer, wave)
+		_core("resume_game")   # Core chạy tiếp từ chỗ đã dừng
 		Audio.set_gameplay_paused(false)
 
 
@@ -498,7 +494,7 @@ func _on_pause_quit_pressed() -> void:
 	get_tree().change_scene_to_file(MENU_SCENE)
 
 
-# Thắng / Thua -> Next: mở Leaderboard (chỉ có nút Back). Chỉ xử lý một lần.
+# Thắng / Thua -> Next: mở Leaderboard. Chỉ xử lý 1 lần.
 func _on_next_pressed() -> void:
 	if _leaving:
 		return
@@ -512,13 +508,13 @@ func _on_next_pressed() -> void:
 
 
 func _on_sun_clicked(id) -> void:
-	# id lấy từ Core, UI không tự tạo id
+	# id lấy từ Core
 	var value = _core("collect_sun", [id])
 	if value != null and int(value) > 0:
 		Audio.play_sfx("sun")
 
 
-# Core vừa bắn một viên đạn (chỉ Peashooter bắn): chỉ hoạt ảnh bắn, KHÔNG phát âm thanh.
+# Core bắn đạn (chỉ Peashooter): chạy animation bắn, không có âm thanh.
 func _on_projectile_fired(row: int, column: float) -> void:
 	var v = plant_views.get(_cell_key(row, floori(column)))
 	if v != null and is_instance_valid(v):
@@ -527,14 +523,13 @@ func _on_projectile_fired(row: int, column: float) -> void:
 			pea.play_shoot()
 
 
-# Core xác nhận đã trồng cây thành công (đã trừ Sun): đúng một tiếng "planting".
+# Trồng cây thành công (Core đã trừ Sun): phát tiếng planting.
 func _on_plant_placed(_row: int, _column: int) -> void:
 	Audio.play_sfx("planting")
 
 
-# Core từ chối trồng cây, kèm lý do thật. Chỉ hai lý do có thông báo:
-# ô đã có cây, và thiếu Sun (Core kiểm tra "ô đã có cây" trước, nên một lần
-# bấm sai chỉ có một lý do -> không bao giờ hiện cả hai thông báo).
+# Core không cho trồng. Chỉ báo 2 trường hợp: ô đã có cây và thiếu Sun.
+# Core check ô có cây trước nên mỗi lần chỉ ra 1 lỗi.
 func _on_placement_rejected(row: int, column: int, reason: int, cost: int = 0) -> void:
 	if reason == PLACE_OCCUPIED:
 		_show_notice(row, column, "CANNOT PLANT HERE!", "", NOTICE_TEXT)
@@ -542,10 +537,9 @@ func _on_placement_rejected(row: int, column: int, reason: int, cost: int = 0) -
 		_show_notice(row, column, "NOT ENOUGH SUN!", "NEED %d SUN" % cost, NOTICE_WARNING)
 
 
-# Thông báo cạnh ô vừa bấm: bay lên nhẹ rồi mờ dần (~1.2 s) và tự xoá.
-# Chỉ có tối đa một thông báo: bấm sai liên tục thì làm mới / thay thông báo đang hiện.
-# Kiểu chữ theo ô đếm Sun của HUD (font mặc định của game, viền kem); thông báo
-# thiếu Sun dùng chữ đỏ đậm cùng hệ để phân biệt.
+# Thông báo cạnh ô vừa bấm: bay lên, mờ dần (~1.2 s) rồi tự xoá.
+# Chỉ giữ 1 thông báo, bấm sai tiếp thì thay cái cũ.
+# Font giống ô đếm Sun trên HUD, thiếu Sun thì dùng chữ đỏ.
 func _show_notice(row: int, column: int, title: String, detail: String, title_color: Color) -> void:
 	var i := row * BOARD_COLS + column
 	if i < 0 or i >= cells.size():
@@ -557,7 +551,7 @@ func _show_notice(row: int, column: int, title: String, detail: String, title_co
 		_notice.name = "PlacementNotice"
 		_notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_notice.add_theme_constant_override("separation", -2)
-		_notice.z_index = 20   # trên cây / zombie / hiệu ứng (lớp phủ Pause vẫn ở trên)
+		_notice.z_index = 20   # nằm trên cây / zombie, dưới lớp Pause
 		for part in [["Title", 22], ["Detail", 16]]:
 			var l := Label.new()
 			l.name = part[0]
@@ -593,15 +587,14 @@ func _show_notice(row: int, column: int, title: String, detail: String, title_co
 	_notice_tween.chain().tween_callback(label.queue_free)
 
 
-# Core xác nhận một viên đạn đã trúng Zombie (mỗi viên tối đa 1 lần): âm thanh trúng đạn.
-# Also the ONLY place that creates the green impact splat: the core emits this signal on a real collision only,
-# so there is no splat for a missed or otherwise removed pea.
+# Đạn trúng zombie: phát âm thanh trúng.
+# Splat cũng chỉ tạo ở đây, nên đạn trượt thì không có splat.
 func _on_projectile_hit(row: int, column: float) -> void:
 	Audio.play_sfx("pea_hit")
 	if entity_layer == null:
 		return
 	var at := _cell_center(float(row), column) + Vector2(0, PlantRig.PEA_BULLET_Y)
-	# put the splat on the zombie that was hit (its face / chest), not on the empty grass in front of it
+	# put the splat on the zombie's body, not on the grass in front of it
 	var best := -1.0
 	for zc in _zombie_columns.get(row, []):
 		if best < 0.0 or absf(zc - column) < absf(best - column):
@@ -626,7 +619,7 @@ func _make_shovel_button() -> void:
 	_shovel_button.tooltip_text = "Shovel"
 	_shovel_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_shovel_button.pressed.connect(_on_shovel_pressed)
-	_shovel_button.z_index = 12   # above every zombie (their z_index is 1..5), which can enter from beyond the lawn
+	_shovel_button.z_index = 12   # above zombies (z 1..5), they can walk in from outside the lawn
 	add_child(_shovel_button)
 
 	# Gold frame while the shovel is selected.
@@ -687,8 +680,8 @@ func _on_plant_shoveled(_row: int, _column: int) -> void:
 # ====================== SQUASH / RUNG MÀN HÌNH ======================
 
 
-# Squash sound: played when a zombie comes within about a cell of the attack range (core signal squash_alert),
-# never when the plant is planted or selected. One voice per Squash cell; cancelled if the zombie leaves first.
+# Squash sound plays when a zombie gets close (core signal squash_alert), not when planting.
+# One sound per Squash cell, cancelled if the zombie goes away first.
 func _squash_key(row: int, column: int) -> String:
 	return "squash_%d_%d" % [row, column]
 
@@ -701,20 +694,20 @@ func _on_squash_alert_cancelled(row: int, column: int) -> void:
 	Audio.stop_tracked(_squash_key(row, column), 0.1)
 
 
-# Lawn mower sound: starts with the mower's activation, one voice per row, stopped when its run ends (_sync_mowers).
+# Mower sound: starts when the mower goes, one per row, stops when it's done (_sync_mowers).
 func _on_mower_activated(row: int) -> void:
 	Audio.play_tracked("mower_%d" % row, "mower")
 
 
-# Core xác nhận Squash vừa hạ cánh: chỉ rung màn hình khi đập trúng Zombie (âm thanh đã phát lúc Zombie tới gần).
+# Squash đáp xuống: rung màn hình nếu trúng zombie (âm thanh đã phát lúc zombie tới gần).
 func _on_squash_smashed(row: int, column: float, hit_count: int) -> void:
 	_note_death_event("squash", row, column)
 	if hit_count > 0:
 		_shake()
 
 
-# Rung ngắn, biên độ nhỏ, rồi trả Control gốc về đúng vị trí ban đầu.
-# Chỉ dịch hình (position của Control gốc); va chạm / logic nằm ở Core nên không bị ảnh hưởng.
+# Rung nhẹ một chút rồi đưa Control gốc về chỗ cũ.
+# Chỉ dịch hình, va chạm nằm ở Core nên không ảnh hưởng.
 func _shake() -> void:
 	if not _shake_origin_set:
 		_shake_origin = position
@@ -731,7 +724,7 @@ func _shake() -> void:
 	_shake_tween.tween_property(self, "position", _shake_origin, 0.02)
 
 
-# Jalapeno vừa nổ (sau ngòi 2 giây của Core): âm thanh + lửa chạy ngang cả hàng.
+# Jalapeno nổ (sau 2 giây): âm thanh + lửa cả hàng.
 func _on_jalapeno_exploded(row: int, column: int) -> void:
 	_note_death_event("burn", row, float(column))
 	Audio.play_sfx("jalapeno")
@@ -744,7 +737,7 @@ func _on_jalapeno_exploded(row: int, column: int) -> void:
 
 
 func _highlight_selected() -> void:
-	# Thẻ cây là vùng bấm trong suốt trên ảnh seed_bank.jpg: bật khung "Selected" của thẻ được chọn
+	# Thẻ được chọn thì bật khung Selected
 	for t in card_buttons.keys():
 		var frame: Control = card_buttons[t].get_node_or_null("Selected")
 		if frame:
@@ -762,10 +755,9 @@ func _update_sun_label() -> void:
 		sun_label.text = str(sun)
 
 
-# "Zombies are coming": đúng MỘT lần mỗi ván, ngay trước khi Zombie đầu tiên xuất hiện.
-# Zombie đầu tiên được WaveManager spawn đúng lúc hết thời gian chuẩn bị, nên cảnh báo
-# phát khi thời gian chuẩn bị (của Core, dừng khi Pause) còn ZOMBIE_WARNING_LEAD giây.
-# Dự phòng: nếu vì lý do nào đó wave đã bắt đầu mà chưa cảnh báo thì phát ngay (vẫn 1 lần).
+# "Zombies are coming": 1 lần mỗi ván, ngay trước zombie đầu tiên.
+# Zombie đầu spawn lúc hết thời gian chuẩn bị nên phát khi còn ZOMBIE_WARNING_LEAD giây.
+# Nếu wave đã bắt đầu mà chưa phát thì phát luôn.
 func _update_zombie_warning() -> void:
 	if _zombie_warning_played:
 		return
@@ -785,7 +777,7 @@ func _update_state_ui() -> void:
 	if state != _last_state:
 		_last_state = state
 		print("[UI] state doi thanh ", state)
-		# Thắng / thua: dừng âm thanh trận, phát âm thanh kết thúc đúng một lần
+		# Thắng / thua: tắt âm thanh trận, phát âm thanh kết thúc 1 lần
 		if state == STATE_VICTORY or state == STATE_DEFEAT:
 			Audio.stop_gameplay_audio()
 			Audio.play_sfx("win" if state == STATE_VICTORY else "lose")
@@ -808,7 +800,7 @@ func _update_state_ui() -> void:
 		fx_layer.process_mode = frozen
 
 
-# ====================== TOẠ ĐỘ Ô (LẤY TỪ CHÍNH 45 Ô BUTTON) ======================
+# ====================== TOẠ ĐỘ Ô ======================
 
 # Lớp vẽ (EntityLayer) dùng đúng transform của Field trong board: toạ độ dưới đây
 # đều là toạ độ cục bộ của lớp vẽ, nên cây/zombie/đạn/Sun co giãn cùng bãi cỏ.
@@ -889,7 +881,7 @@ func _make_plant_view() -> Control:
 
 
 func _make_bullet_view() -> Control:
-	# Chỉ là hình: vị trí / va chạm vẫn hoàn toàn do Core quyết định
+	# Chỉ là hình, vị trí / va chạm do Core lo
 	var root := TextureRect.new()
 	root.texture = _tex(PROJECTILE_TEXTURE)
 	root.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -951,7 +943,7 @@ func _sync_plants() -> void:
 		var rig_node := v.get_node("Rig") as PlantRig
 		var hp_now := int(d.get("health", 0))
 		var max_hp := maxi(int(v.get_meta("max_hp", hp_now)), 1)
-		# HP numbers only while a plant is damaged (they are not part of the original look)
+		# show HP only when the plant is damaged
 		var hp_label := v.get_node("Hp") as Label
 		hp_label.text = str(hp_now)
 		hp_label.visible = hp_now < max_hp
@@ -964,7 +956,7 @@ func _sync_plants() -> void:
 		rig_node.animating = not paused
 		rig_node.update_from(d)
 		v.position = _cell_center(float(row), float(col)) - v.size * 0.5
-		# Squash: the jump pose follows the core's state; the plant glides to the landing cell (display only).
+		# Squash: jump pose follows the core state, the plant slides over to the target cell.
 		if t == PLANT_SQUASH:
 			if int(d.get("state", 0)) == 1:
 				var landing := _cell_center(float(row), float(d.get("target_column", col)))
@@ -977,14 +969,14 @@ func _sync_plants() -> void:
 	for key in plant_views.keys():
 		if not alive.has(key):
 			var gone: Control = plant_views[key]
-			# A Squash that vanished mid-jump has just landed: leave the flattened Squash behind.
+			# A Squash that disappeared mid-jump just landed: leave the squashed sprite there.
 			if bool(gone.get_meta("jumping", false)) and int(gone.get_meta("type", -1)) == PLANT_SQUASH:
 				var splat := PlantRig.make_squash_splat()
 				splat.position = (gone.get_meta("landing") as Vector2) + Vector2(0, PLANT_GROUND_Y - 36.0)
 				splat.z_index = 2
 				entity_layer.add_child(splat)
 			elif int(gone.get_meta("type", -1)) == PLANT_SQUASH:
-				Audio.stop_tracked(_squash_key(int(gone.get_meta("row", -1)), int(gone.get_meta("col", -1))), 0.1)   # removed before attacking
+				Audio.stop_tracked(_squash_key(int(gone.get_meta("row", -1)), int(gone.get_meta("col", -1))), 0.1)   # removed before it attacked
 			gone.queue_free()
 			plant_views.erase(key)
 
@@ -999,8 +991,8 @@ func _zombie_feet(row: int, column: float) -> Vector2:
 	return Vector2(front.x + ZOMBIE_FEET_BEHIND_FRONT, front.y + row_h * ZOMBIE_FEET_BELOW_CENTER)
 
 
-# Core: the Gargantuar threw its Imp (row, from_column, to_column). The Imp's own view appears on the same
-# frame; the flight is purely visual (the Imp is already a real enemy standing on its landing column).
+# Gargantuar threw its Imp (row, from_column, to_column). The Imp's view shows up the same frame,
+# the flight is just visual (the Imp already exists in the core at its landing spot).
 func _on_imp_thrown(row: int, _from_column: float, _to_column: float) -> void:
 	_pending_imp_throws.append({"row": row})
 
@@ -1014,12 +1006,10 @@ func _start_imp_flight(imp_view: ZombieView, info: Dictionary) -> void:
 			return
 
 
-# ---- why did a zombie die? (only to pick the death animation; the core is never asked to change) ----
-# The core reports a Jalapeno blast and a Squash smash as signals, in the same update that removes the zombies they kill,
-# and Lawn Mower runs are in get_mowers_data(). So a death is "burn" / "squash" when such an event happened a moment ago in
-# the zombie's row (Squash: within its smash radius of the landing column), "mower" when a running mower's hit window
-# covers the zombie's last column, and an ordinary kill (a pea) otherwise: Peashooter is the only other thing that kills.
-# A mix-up between two kills in the very same instant only changes which animation plays.
+# ---- why did the zombie die? (only used to pick the death animation) ----
+# Jalapeno and Squash come in as signals in the same update that kills the zombies, mowers are in
+# get_mowers_data(). If one of those just happened in the zombie's row it's burn / squash / mower,
+# otherwise it was a pea. Two kills at the exact same moment might pick the wrong animation, no big deal.
 const DEATH_EVENT_FRAMES := 4
 const SQUASH_RADIUS := 0.8          # Squash::SMASH_RADIUS in src/squash.hpp
 const MOWER_HIT_BEHIND := 1.0       # LawnMower::HIT_BEHIND / HIT_AHEAD in src/lawn_mower.hpp
@@ -1037,7 +1027,7 @@ func _note_death_event(type: String, row: int, col: float) -> void:
 
 func _death_cause(v: ZombieView) -> String:
 	if v.kind == 1:
-		return ""                    # the Gargantuar keeps its heavy fall whatever killed it (PuppetZombie ignores the cause)
+		return ""                    # Gargantuar always uses its own fall animation
 	var f := Engine.get_process_frames()
 	for e in _death_events:
 		if f - int(e["frame"]) > DEATH_EVENT_FRAMES or int(e["row"]) != v.last_row:
@@ -1088,7 +1078,7 @@ func _sync_zombies() -> void:
 			# A new Imp that the Gargantuar just threw: fly it in from the Gargantuar's back.
 			if int(d.get("kind", 0)) == 2 and not _pending_imp_throws.is_empty():
 				v.set_meta("throw", _pending_imp_throws.pop_front())
-		# UI chỉ quyết định "dữ liệu này thì vẽ hình gì", không tự tính sát thương
+		# UI chỉ chọn hình để vẽ, không tính sát thương
 		var row := int(d.get("row", 0))
 		v.z_index = 1 + row   # hàng dưới vẽ đè hàng trên, Zombie đè cây cùng hàng
 		v.position = _zombie_feet(row, float(d.get("column", 0)))
@@ -1097,7 +1087,7 @@ func _sync_zombies() -> void:
 		if v.has_meta("throw"):
 			_start_imp_flight(v, v.get_meta("throw"))
 			v.remove_meta("throw")
-	# Tiếng ăn: một vòng lặp liên tục khi còn ít nhất một Zombie đang ăn (không phát lại mỗi frame)
+	# Tiếng ăn: loop khi còn zombie đang ăn
 	if state == STATE_PLAYING or state == STATE_PAUSED:
 		Audio.set_eating(any_eating)
 	# Zombie biến khỏi dữ liệu Core = đã chết -> chơi death rồi tự xoá
@@ -1119,7 +1109,7 @@ func _sync_mowers() -> void:
 		var used := int(d.get("state", 0)) == 2
 		var v: Node2D = mower_views.get(row)
 		if used:
-			Audio.stop_tracked("mower_%d" % row, 0.25)    # the run is over: let the sound die away
+			Audio.stop_tracked("mower_%d" % row, 0.25)    # run is over, fade out the sound
 			if v != null:
 				v.queue_free()
 				mower_views.erase(row)
@@ -1170,8 +1160,8 @@ func _sync_bullets() -> void:
 			v.visible = false
 			continue
 		v.visible = true
-		# Đạn chỉ do Peashooter bắn: vẽ ngang miệng cây (chỉ dịch hình theo chiều dọc;
-		# cột / va chạm vẫn là của Core)
+		# Đạn vẽ ngang miệng Peashooter (chỉ dịch theo chiều dọc,
+		# cột / va chạm vẫn theo Core)
 		var mouth_y := PlantRig.PEA_BULLET_Y
 		v.position = _cell_center(float(d.get("row", 0)), float(d.get("column", 0))) \
 			+ Vector2(0, mouth_y) - v.size * 0.5
@@ -1213,7 +1203,7 @@ func _setup_end_screens() -> void:
 			old_buttons.queue_free()   # Play Again / Quit chuyển sang Leaderboard
 		var is_win: bool = screen == win_screen
 		if not is_win:
-			# Dùng đúng ảnh Game Over có sẵn thay cho chữ vẽ tay
+			# Dùng ảnh Game Over có sẵn
 			var title := screen.find_child("Title", true, false) as Control
 			if title:
 				title.visible = false
@@ -1267,13 +1257,13 @@ func _setup_end_screens() -> void:
 		_next_buttons.append(next)
 
 
-# Lưu kết quả đúng MỘT lần (Session cũng chặn lưu lần thứ hai) và hiện điểm.
+# Lưu kết quả 1 lần (Session cũng chặn lưu 2 lần) và hiện điểm.
 func _record_result(won: bool) -> void:
 	if _result_recorded:
 		return
 	_result_recorded = true
 	var spent = _core("get_sun_spent")
-	# Not saved yet: it becomes a leaderboard record only when Quit is clicked on the post-match leaderboard.
+	# Session ghi kết quả vào leaderboard (chỉ trong bộ nhớ)
 	Session.add_result(won, int(spent) if spent != null else 0)
 	var score := int(Session.last_result.get("score", 0))
 	var screen: Control = win_screen if won else lose_screen
@@ -1284,7 +1274,7 @@ func _record_result(won: bool) -> void:
 
 # ====================== THÔNG BÁO WAVE ======================
 
-# "A huge wave of zombies is approaching": đúng một lần, ngay trước wave cuối (Core phát tín hiệu).
+# "A huge wave of zombies is approaching": 1 lần, ngay trước wave cuối (Core báo).
 func _on_huge_wave_warning() -> void:
 	if _huge_wave_shown:
 		return
@@ -1292,8 +1282,8 @@ func _on_huge_wave_warning() -> void:
 	_show_announcement(HUGE_WAVE_TEXTURE, HUGE_WAVE_SCALE, HUGE_WAVE_HOLD, BANNER_Y)
 
 
-# "Final Wave": đúng một lần, phát ngay khi banner "A huge wave..." hết slot của nó (Core phát
-# final_wave_banner). Zombie wave cuối chỉ bắt đầu sau khi banner này cũng hết slot.
+# "Final Wave": 1 lần, ngay sau khi banner "A huge wave..." hết giờ (signal final_wave_banner).
+# Zombie wave cuối chỉ ra sau khi banner này cũng xong.
 func _on_final_wave_banner() -> void:
 	if _final_wave_shown:
 		return
@@ -1301,7 +1291,7 @@ func _on_final_wave_banner() -> void:
 	_show_announcement(FINAL_WAVE_TEXTURE, FINAL_WAVE_SCALE, FINAL_WAVE_HOLD, BANNER_Y)
 
 
-# wave_started không còn tạo banner (banner nằm trước wave 4); chỉ giữ để mở rộng sau.
+# wave_started giờ không hiện banner nữa (banner nằm trước wave 4), để đó lỡ cần sau.
 func _on_wave_started(_wave: int) -> void:
 	pass
 
@@ -1340,7 +1330,7 @@ func _clear_transient_fx() -> void:
 	if fx_layer == null:
 		return
 	for c in fx_layer.get_children():
-		# Godot renames a second node with the same name, so the banners are tagged with meta instead of by name.
+		# Godot renames nodes with duplicate names, so tag the banners with meta instead.
 		if c.name == "StartText" or c.has_meta("announcement"):
 			c.queue_free()
 	if _boss_bar:
@@ -1374,7 +1364,7 @@ func _make_boss_bar() -> void:
 	_boss_bar = Control.new()
 	_boss_bar.name = "BossBar"
 	_boss_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	# In the empty part of the Seed Bank strip: clearly visible, never over the lawn.
+	# Put it in the empty part of the Seed Bank bar so it doesn't cover the lawn.
 	_boss_bar.position = Vector2(400, 22)
 	_boss_bar.size = Vector2(380, 40)
 	fx_layer.add_child(_boss_bar)
@@ -1409,9 +1399,9 @@ func _make_boss_bar() -> void:
 
 # ====================== SEED BANK ======================
 
-# Mỗi thẻ: nền thẻ cắt từ SeedPackets.png + hình cây + tên + giá Sun.
-# Trạng thái: chọn (khung vàng có sẵn), thiếu Sun (phủ tối + giá đỏ). Chưa có cơ chế hồi
-# chiêu trong Core nên không vẽ hồi chiêu.
+# Mỗi thẻ: nền SeedPackets.png + hình cây + tên + giá.
+# Có trạng thái được chọn (khung vàng) và thiếu Sun (tối + giá đỏ).
+# Core chưa có cooldown nên chưa vẽ.
 func _build_seed_packets() -> void:
 	var sheet := _tex(SEED_PACKET_TEXTURE)
 	for t in card_buttons.keys():
@@ -1457,11 +1447,9 @@ func _build_seed_packets() -> void:
 		name_label.add_theme_color_override("font_outline_color", Color("1f3a12"))
 		name_label.add_theme_constant_override("outline_size", 4)
 		b.add_child(name_label)
-		# Set the box only after the font override and parenting: if size is set first, Godot clamps
-		# it to the minimum size at the default 16px font, which widens long names (Sunflower,
-		# Peashooter) to the right and pushes the centered text off the card centre.
-		# x = -2 (not -3): the font's glyph bearings + outline render the ink ~0.5-1 px left of the
-		# box centre; this +1 px nudge was measured from screenshots to centre the ink on the card.
+		# Set size after the font and parent. If it's set before, Godot clamps it to the min size
+		# with the default 16px font and long names (Sunflower, Peashooter) end up off-centre.
+		# x = -2 instead of -3: text looked ~1 px too far left in screenshots, so nudge it.
 		name_label.position = Vector2(-2, 43)
 		name_label.size = Vector2(SEED_PACKET_SIZE.x + 6, 12)
 
